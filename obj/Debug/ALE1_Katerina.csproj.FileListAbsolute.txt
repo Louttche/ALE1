@@ -1,0 +1,10 @@
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\bin\Debug\ALE1_Katerina.exe.config
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\bin\Debug\ALE1_Katerina.exe
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\bin\Debug\ALE1_Katerina.pdb
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.csprojAssemblyReference.cache
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.Form1.resources
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.Properties.Resources.resources
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.csproj.GenerateResource.cache
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.csproj.CoreCompileInputs.cache
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.exe
+D:\Dropbox\Uni\Electives\ALE\Project\ALE1_Katerina\obj\Debug\ALE1_Katerina.pdb
