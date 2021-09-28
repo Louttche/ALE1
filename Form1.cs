@@ -180,10 +180,12 @@ namespace ALE1_Katerina
             Console.WriteLine("Number of  vars this time: " + numOfVariables);
             int numOfColumns = numOfVariables + 1;
             double numOfRows = Math.Pow(2, numOfVariables); //number of rows for the truth values - without the variable/formula row
-
-            bool truthValue = false;
+            Dictionary<char, double> each_var_numOfZeroes = new Dictionary<char, double>();
+            Dictionary<char, bool> changeTruthValue = new Dictionary<char, bool>();
+            //bool changeTruthValue = false;
 
             table_truth.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            table_truth.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             table_truth.ColumnCount = numOfColumns;
             table_truth.RowCount = (int)numOfRows + 1;
 
@@ -195,34 +197,37 @@ namespace ALE1_Katerina
                     // Draw Variable e.g. 'A' or its zeroes/ones / truth values
                     if (variablesLeft > 0) //i < numOfColumns - 1
                     {
+
                         Label temp_table_value = new Label();
                         // Draw Variable e.g. 'A'
                         if (row == 0)
                         {
-                            temp_table_value.Text = variables[col].Value.ToString();
-                            table_truth.Controls.Add(temp_table_value, col, row);
-                            //Console.WriteLine("Var: " + variables[col].Value);
-                        }
+                            // Set the number of zeroes/ones for that variable using a dictionary as reference
+                            each_var_numOfZeroes.Add(variables[col].Value, Math.Pow(2, variablesLeft - 1));
+                            // Add to dictionary that references whether this variable or not needs to switch zeroes/ones
+                            changeTruthValue.Add(variables[col].Value, false);
 
+                            variables[col].Truth_value = false;
+
+                            temp_table_value.Text = variables[col].Value.ToString();
+                            temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
+                            table_truth.Controls.Add(temp_table_value, col, row);
+                        }
                         // Draw zeroes/ones / truth values
                         else
                         {
-                            double numOfZeroes = Math.Pow(2, variablesLeft - 1); // numOf how many Zeroes and Ones
-
-                            // Set variables value to truthValue
-                            variables[col].Truth_value = truthValue;
-
                             // Draw zero/one
-                            temp_table_value.Text = truthValue == true ? 1.ToString() : 0.ToString();
+                            temp_table_value.Text = variables[col].Truth_value == true ? 1.ToString() : 0.ToString();  //truthValue == true ? 1.ToString() : 0.ToString();
                             table_truth.Controls.Add(temp_table_value, col, row);
-                            //Console.WriteLine(truthValue == true ? 1 : 0);
-                            //Console.WriteLine("Truth value is: " + truthValue.ToString());
 
-                            // Switch to one/zero if needed
-                            if (row % numOfZeroes == 0)
+                            // Switch to one/zero for the corresponding var using the dictionary
+                            double numOfZeroes;
+                            if (each_var_numOfZeroes.TryGetValue(variables[col].Value, out numOfZeroes))
                             {
-                                truthValue = !truthValue;
-                                //Console.WriteLine("col " + col + ":\tswitched to " + truthValue);
+                                if (row % numOfZeroes == 0)
+                                    changeTruthValue[variables[col].Value] = true;
+                                else
+                                    changeTruthValue[variables[col].Value] = false;
                             }
                         }
 
@@ -230,33 +235,30 @@ namespace ALE1_Katerina
                     }
                     else // Draw Formula or its truth results
                     {
-                        Console.WriteLine(variablesLeft.ToString());
                         Label temp_table_value = new Label();
 
                         // Draw Formula
                         if (row == 0)
                         {
+                            temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
                             temp_table_value.Text = this.formula;
                             table_truth.Controls.Add(temp_table_value, col, row);
-                            //Console.WriteLine("Formula:\t" + this.formula);
                         }
-
                         // TODO: Fix it
                         else { // Calculate and Draw truth value
                             temp_table_value.Text = Get_Result(operators[0]).ToString();
                             table_truth.Controls.Add(temp_table_value, col, row);
-                            //Console.WriteLine("Result:\t" + Get_Result(operators[0]).ToString());
+
+                            // switch to zeroes/ones depending on variable
+                            foreach (Operant operant_var in variables)
+                            {
+                                if (changeTruthValue[operant_var.Value] == true)
+                                    operant_var.Truth_value = !operant_var.Truth_value;
+                            }                                
                         }
                     }
                 }
             }
-
-            // Format the table
-            //foreach (RowStyle r_style in table_truth.RowStyles)
-                //r_style.SizeType = SizeType.AutoSize;
-
-            //foreach (ColumnStyle c_style in table_truth.ColumnStyles)
-                //c_style.SizeType = SizeType.AutoSize;
         }
 
         private int Get_Result(Operator o)
@@ -368,11 +370,6 @@ namespace ALE1_Katerina
                     }
                 }
             }
-        }
-
-        private void Init_TruthTable()
-        {
-            ;
         }
 
         private void ShowVariables(List<Operant> vars){
