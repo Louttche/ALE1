@@ -62,10 +62,8 @@ namespace ALE1_Katerina
             //_nodesDebug();
 
             // Connect paint event to UI
-            tc_1.TabPages[0].Paint += new PaintEventHandler(Draw_Tree);
-            tc_1.TabPages[0].Refresh();
-            //panel_tree.Paint += new PaintEventHandler(Draw_Tree);
-            //panel_tree.Refresh();
+            panel_tree.Paint += new PaintEventHandler(Draw_Tree);
+            panel_tree.Refresh();
 
             // Display variables
             ShowVariables(this.operants);
@@ -244,7 +242,6 @@ namespace ALE1_Katerina
                             temp_table_value.Text = this.formula;
                             table_truth.Controls.Add(temp_table_value, col, row);
                         }
-                        // TODO: Fix it
                         else { // Calculate and Draw truth value
                             temp_table_value.Text = Get_Result(operators[0]).ToString();
                             table_truth.Controls.Add(temp_table_value, col, row);
@@ -323,53 +320,73 @@ namespace ALE1_Katerina
             return result;
         }
 
-        private void Draw_Tree(object sender, PaintEventArgs e) // TODO
+        private void Draw_Tree(object sender, PaintEventArgs e)
         {
             var g = e.Graphics;
             System.Drawing.Color color = System.Drawing.Color.Black;
-            List<int> drawn_nodes_id = new List<int>();
 
-            // Get panel dimensions
-            float max_width = tc_1.Width;
-            float max_height = tc_1.Height;
+            // TODO: Find a way to resize if tree goes out of bounds
+            //panel_tree.Width = 350;
 
-            // Initialize to top center
-            int x_coord_init = (tc_1.Width / 2) - 30;
+            // Set top center values
+            int x_coord_init = (panel_tree.Width / 2) - 30;
             int y_coord_init = 20;
             int radius = 40;
 
-            int x_coord_curr = x_coord_init;
-            int y_coord_curr = y_coord_init;
+            DrawTreeChild(operators[0], x_coord_init, y_coord_init, radius, g);
+        }
 
-            int x_child_offset = radius * 2;
-            int y_child_offset = 20 + (radius * 2);
+        private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0) //double nrOfoffsets = -1
+        {
+            System.Drawing.Color color = System.Drawing.Color.Black;
 
-            foreach (INode n in this.formula_nodes)
+            Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")");
+            // TODO: Set radius according to node char (in the DrawNode method)
+            // Draw operator
+            o.DrawNode(x, y, radius, color, g);
+
+            // Set up offsets for this node
+            if (x_offset == 0)
+                x_offset = Math.Pow(2, operators.Count() - 1); // Correlates to the number of levels the tree will have
+            else
+                x_offset = x_offset - (x_offset / 2);
+
+            double y_offset = radius * 2;
+            //double line_length = Math.Sqrt(Math.Pow(line_x - radius, 2) + Math.Pow(line_y - radius, 2)); // Pythagoras
+
+            // Draw children
+            if (o.Left_child != null)
             {
-                // if not drawn yet
-                if (n.Drawn == false)
-                {
-                    n.DrawNode(x_coord_init, y_coord_init, radius, color, g);
-                    drawn_nodes_id.Add(n.ID);
-                }
+                int x_child = (int)(x - x_offset * radius);
+                int y_child = (int)(y + y_offset);
 
-                // draw children
-                if (n is Operator)
+                if (o.Left_child is Operator)
+                    // If child is operator, call this method again
+                    DrawTreeChild((Operator)o.Left_child, x_child, y_child, radius, g, x_offset);
+                else
                 {
-                    if (n.GetType().GetProperty("Left_child") != null)
-                    {
-                        x_coord_curr = x_coord_init - x_child_offset;
-                        y_coord_curr = y_coord_init + y_child_offset;
-                        //n.left_child.DrawNode(x_coord_curr, y_coord_curr, radius, color, g);
-                    }
-                    if (n.GetType().GetProperty("Right_child") != null)
-                    {
-                        x_coord_curr = x_coord_init + x_child_offset;
-                        y_coord_curr = y_coord_init + y_child_offset;
-                        //DrawNode()
-                    }
+                    // Draw left operant child
+                    o.Left_child.DrawNode(x_child, y_child, radius, color, g);
+                    Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")");
                 }
             }
+
+            if (o.Right_child != null)
+            {
+                int x_child = (int)(x + x_offset * radius);
+                int y_child = (int)(y + y_offset);
+
+                if (o.Right_child is Operator)
+                    // If child is operator, call this method again
+                    DrawTreeChild((Operator)o.Right_child, x_child, y_child, radius, g, x_offset);
+                else
+                {
+                    // Draw right operant child
+                    o.Right_child.DrawNode(x_child, y_child, radius, color, g);
+                    Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")");
+                }
+            }
+
         }
 
         private void ShowVariables(List<Operant> vars){
