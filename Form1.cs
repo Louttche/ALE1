@@ -26,7 +26,12 @@ namespace ALE1_Katerina
         public List<Operator> operators = new List<Operator>();
         public List<Operant> operants = new List<Operant>();
 
-        //public System.Drawing.Graphics graphicsObj;
+        // For simplification
+        public List<string> truth_rows = new List<string>();
+        Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
+        Dictionary<int, List<string>> simplified_groups = new Dictionary<int, List<string>>();
+
+        public string formula_binary = "";
 
         public Form1()
         {
@@ -50,16 +55,28 @@ namespace ALE1_Katerina
             table_truth.ColumnStyles.Clear();
             table_truth.Controls.Clear();
 
+            this.nr_of_ones_groups.Clear();
+            this.simplified_groups.Clear();
+
+            this.formula_binary = " ";
+
             // Get formula from text box //
             this.formula = tb_formula.Text.Replace(" ", ""); // --> remove spaces
             formula_index = 0;
 
-            // recursive method initializes all nodes with their children/parent
-            AddNode(this.formula);
-            Draw_Truth_Table(this.operants);
+            AddNode(this.formula);              // recursive method initializes all nodes with their children/parent
+            Draw_Truth_Table(this.operants);    // creates and draws truth table values
+            Simplify();                         // simplifies truth tables
+
+
+            lbl_binary.Text = " ";
+            lbl_binary.Text = this.formula_binary;
+            FillInZeroes(this.formula_binary);
+            ShowHex(this.formula_binary);
+            
 
             // DEBUG
-            //_nodesDebug();
+            _nodesDebug(false, true); // nodes | simplification
 
             // Connect paint event to UI
             panel_tree.Paint += new PaintEventHandler(Draw_Tree);
@@ -177,10 +194,13 @@ namespace ALE1_Katerina
             int numOfVariables = variables.Count();
             Console.WriteLine("Number of  vars this time: " + numOfVariables);
             int numOfColumns = numOfVariables + 1;
-            double numOfRows = Math.Pow(2, numOfVariables); //number of rows for the truth values - without the variable/formula row
+            double numOfRows = Math.Pow(2, numOfVariables); // number of rows for the truth values - without the variable/formula row
             Dictionary<char, double> each_var_numOfZeroes = new Dictionary<char, double>();
             Dictionary<char, bool> changeTruthValue = new Dictionary<char, bool>();
             //bool changeTruthValue = false;
+
+            // Simplification
+            string temp_row = "";
 
             table_truth.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
             table_truth.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -189,6 +209,7 @@ namespace ALE1_Katerina
 
             for (int row = 0; row < numOfRows + 1; row++)
             {
+                temp_row = "";
                 int variablesLeft = numOfVariables;
                 for (int col = 0; col < numOfColumns; col++)
                 {
@@ -205,20 +226,30 @@ namespace ALE1_Katerina
                             // Add to dictionary that references whether this variable or not needs to switch zeroes/ones
                             changeTruthValue.Add(variables[col].Value, false);
 
-                            variables[col].Truth_value = false;
+                            //variables[col].Truth_value = false; // DEFAULT
+                            // Find all nodes with the same operant and set their truth value
+                            IEnumerable<INode> ns = formula_nodes.Where(n => n.Value == variables[col].Value);
+                            foreach (INode n in ns)
+                                n.Truth_value = false;
+                                //Console.WriteLine($"{n.Value}'s truth: {n.Truth_value}");
 
                             temp_table_value.Text = variables[col].Value.ToString();
                             temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
                             table_truth.Controls.Add(temp_table_value, col, row);
+
                         }
                         // Draw zeroes/ones / truth values
                         else
                         {
                             // Draw zero/one
-                            temp_table_value.Text = variables[col].Truth_value == true ? 1.ToString() : 0.ToString();  //truthValue == true ? 1.ToString() : 0.ToString();
+                            string one_zero = variables[col].Truth_value == true ? 1.ToString() : 0.ToString();  //truthValue == true ? 1.ToString() : 0.ToString();
+                            temp_table_value.Text = one_zero;
                             table_truth.Controls.Add(temp_table_value, col, row);
 
-                            // Switch to one/zero for the corresponding var using the dictionary
+                            // Simplification: add 0/1 to row string list
+                            temp_row += one_zero;
+
+                            // Set which variable's truth values need to switch to one/zero after the calculation
                             double numOfZeroes;
                             if (each_var_numOfZeroes.TryGetValue(variables[col].Value, out numOfZeroes))
                             {
@@ -243,41 +274,67 @@ namespace ALE1_Katerina
                             table_truth.Controls.Add(temp_table_value, col, row);
                         }
                         else { // Calculate and Draw truth value
-                            temp_table_value.Text = Get_Result(operators[0]).ToString();
+                            string result = Get_Result(operators[0]).ToString();
+                            temp_table_value.Text = result;
                             table_truth.Controls.Add(temp_table_value, col, row);
+
+                            // Simplification: add result to row string list
+                            temp_row += result;
+
+                            // Add the result to the front of the binary list
+                            this.formula_binary = result + this.formula_binary;
 
                             // switch to zeroes/ones depending on variable
                             foreach (Operant operant_var in variables)
                             {
                                 if (changeTruthValue[operant_var.Value] == true)
-                                    operant_var.Truth_value = !operant_var.Truth_value;
+                                {
+                                    //operant_var.Truth_value = !operant_var.Truth_value; // DEFAULT (doesnt work when there is more than 1 of the same variables)
+                                    // Find all nodes with the same operant and set their truth value
+                                    IEnumerable<INode> ns = formula_nodes.Where(n => n.Value == operant_var.Value);
+                                    foreach (INode n in ns)
+                                        n.Truth_value = !n.Truth_value;
+                                }
                             }                                
                         }
                     }
+
+                    // End of Column
+                    
+                    if (temp_row.Length == numOfColumns)
+                        this.truth_rows.Add(temp_row);
                 }
+                // End of Row
             }
         }
 
         private int Get_Result(Operator o)
         {
+            //Console.WriteLine($"Getting result for: {o.Value}");
             int result = -1;
             int result_left = -1;
             int result_right = -1;
 
             if (o.Left_child != null)
             {
+                //Console.WriteLine($"Getting result for left child: {o.Left_child.Value}");
                 if (o.Left_child.GetType() == typeof(Operator))
                     result_left = Get_Result((Operator)o.Left_child);
                 else
                     result_left = o.Left_child.Truth_value == true ? 1 : 0;
+
+                //Console.WriteLine($"\tleft result: {result_left}");
             }
 
             if (o.Right_child != null)
             {
+                //Console.WriteLine($"Getting result for right child: {o.Right_child.Value}");
                 if (o.Right_child.GetType() == typeof(Operator))
                     result_right = Get_Result((Operator)o.Right_child);
                 else
                     result_right = o.Right_child.Truth_value == true ? 1 : 0;
+
+                //Console.WriteLine($"\tright result: {result_right}");
             }
 
             if ((result_left > -1) || (result_right > -1))
@@ -316,7 +373,8 @@ namespace ALE1_Katerina
                         break;
                 }
             }
-            
+
+            //Console.WriteLine($"final result: {result}");
             return result;
         }
 
@@ -336,11 +394,93 @@ namespace ALE1_Katerina
             DrawTreeChild(operators[0], x_coord_init, y_coord_init, radius, g);
         }
 
-        private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0) //double nrOfoffsets = -1
+        private void Simplify()
+        {
+            /* Using Quine-McCluskey's Technique */
+
+            // Rows with result 0 SHOULD NOT be simplified
+            List<string> simplified_truth_rows = new List<string>();
+            //Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
+
+            // Initialise groups dictionary (based on nr of 1's)
+            for (int i = 0; i <= this.operants.Count(); i++)
+            {
+                this.nr_of_ones_groups.Add(i, new List<string>());
+                this.simplified_groups.Add(i, new List<string>());
+            }
+
+            // Remove rows with result = 0, and the result from each string
+            foreach (string s_row in this.truth_rows)
+            {
+                if (s_row.Last() == '1')
+                {
+                    string temp = s_row.Substring(0, s_row.Length - 1);
+                    simplified_truth_rows.Add(temp);
+
+                    // TODO: Don't use a list, just do process here
+                }
+            }
+
+            for (int i = 0; i < simplified_truth_rows.Count(); i++)
+            {
+                // Check for a match with every other row
+
+                /** STEP 1
+                 *  Separate rows in groups depending on the nr of ones they have, no 1's, one 1, two 1's ... */
+
+                int nr_of_ones = simplified_truth_rows[i].Count(one => one == '1');
+                this.nr_of_ones_groups[nr_of_ones].Add(simplified_truth_rows[i]);
+
+            }
+
+            /** STEP 2
+             *  Compare Groups and Simplify pairs */
+
+            KeyValuePair<int, List<string>> last_group = this.nr_of_ones_groups.Last();
+            foreach (KeyValuePair<int, List<string>> group in this.nr_of_ones_groups)
+            {
+                // Discard last group, can't compare it with anything more
+                if (last_group.Equals(group))
+                    break;
+
+                // Main row we're comparing in main group
+                foreach (string s_row in group.Value)
+                {
+                    // Compare with each row of the group that comes next
+                    foreach (string other_row in this.nr_of_ones_groups[group.Key + 1])
+                    {
+                        // Compare each character
+                        int differences = 0;
+                        string simplified_row = "";
+                        for (int truth_value_index = 0; truth_value_index < this.operants.Count(); truth_value_index++)
+                        {
+                            if (s_row[truth_value_index] != other_row[truth_value_index])
+                            {
+                                differences++;
+                                if (differences > 1)
+                                    break; // Ignore rows with more than 1 differences
+
+                                simplified_row += '*';
+                            } else // it matches
+                                simplified_row += s_row[truth_value_index];
+
+                            // If its the last pair, add the row to simplified groups
+                            if (truth_value_index + 1 == this.operants.Count())
+                                this.simplified_groups[group.Key].Add(simplified_row);
+                        }
+                    }
+                }
+            }
+
+            /** STEP 3
+             *  Compare Groups and Simplify pairs */
+        }
+
+        private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false) //double nrOfoffsets = -1
         {
             System.Drawing.Color color = System.Drawing.Color.Black;
 
-            Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")");
+            if (debug == true) { Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")"); }
             // TODO: Set radius according to node char (in the DrawNode method)
             // Draw operator
             o.DrawNode(x, y, radius, color, g);
@@ -367,7 +507,7 @@ namespace ALE1_Katerina
                 {
                     // Draw left operant child
                     o.Left_child.DrawNode(x_child, y_child, radius, color, g);
-                    Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")");
+                    if (debug == true) { Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
 
@@ -383,7 +523,7 @@ namespace ALE1_Katerina
                 {
                     // Draw right operant child
                     o.Right_child.DrawNode(x_child, y_child, radius, color, g);
-                    Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")");
+                    if (debug == true) { Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
 
@@ -401,26 +541,94 @@ namespace ALE1_Katerina
             lbl_vars.Text = var_string.Substring(0, var_string.Length - 2);
         }
 
-        private void ShowBinary()
+        private void ShowHex(string binary_s)
         {
-            ;
+            lbl_hex.Text = "";
+            double pos_value = 8; // 8, 4, 2, 1
+            int each_sum = 0;
+            for (int i = 1; i <= binary_s.Length; i++)
+            {
+                // Add to sum
+                if (binary_s[i - 1] == '1')
+                    each_sum += (int)pos_value;
+
+                if (i % 4 == 0)
+                {
+                    // Convert and add the sum of the current '4' binary digits into hex
+                    //if (each_sum > 0) // Don't show 0 hex values
+                    lbl_hex.Text += each_sum.ToString("X");
+
+                    // Reset sum and j
+                    each_sum = 0;
+                    pos_value = 8;
+                }
+                else
+                    pos_value = pos_value / 2;
+            }
         }
 
-        private void ShowHex()
+        private string FillInZeroes(string binary_s)
         {
-            ;
+            int s_length = binary_s.Length;
+            // If length is 'missing' 0s for hex, add them in front of string //
+            if (s_length % 4 != 0)
+            {
+                // add 2 0's if length is even
+                if (s_length % 2 == 0)
+                    binary_s = "00" + binary_s;
+                // add 1/3 0's if odd
+                else
+                {
+                    // if the remainder is 1 or bigger than 3, add 3 0's
+                    if ((s_length % 4 > 3) || (s_length % 4 == 1))
+                        binary_s = "000" + binary_s;
+                    // else add 1 0's
+                    else
+                        binary_s = '0' + binary_s;
+                }
+            }
+
+            return binary_s;
         }
 
         // DEBUG
-        private void _nodesDebug()
+        private void _nodesDebug(bool debugNodes = true, bool debugSimplification = true)
         {
-            foreach (Operator x in this.formula_nodes.Where(x => x.GetType() == typeof(Operator)))
+
+            Console.WriteLine("\n\nDEBUG\n");
+
+            if (debugNodes)
             {
-                Console.WriteLine("\nNode {0}\n", x.Value);
-                if (x.Left_child != null)
-                    Console.WriteLine("\tLC: {0}", x.Left_child.Value);
-                if (x.Right_child != null)
-                    Console.WriteLine("\tRC: {0}", x.Right_child.Value);
+                Console.WriteLine("INITIALIZED NODES");
+                foreach (Operator x in this.formula_nodes.Where(x => x.GetType() == typeof(Operator)))
+                {
+                    Console.WriteLine("\nNode {0}\n", x.Value);
+                    if (x.Left_child != null)
+                        Console.WriteLine("\tLC: {0}", x.Left_child.Value);
+                    if (x.Right_child != null)
+                        Console.WriteLine("\tRC: {0}", x.Right_child.Value);
+                }
+            }
+
+            if (debugSimplification)
+            {
+                Console.WriteLine("\nSIMPLIFICATION");
+
+                Console.WriteLine("\nSTEP 1: Groups Based on nr of 1's");
+                foreach (KeyValuePair<int, List<string>> entry in this.nr_of_ones_groups)
+                {
+                    Console.WriteLine($"Group {entry.Key}");
+                    foreach (string val in this.nr_of_ones_groups[entry.Key])
+                        Console.WriteLine(val);
+                }
+
+                Console.WriteLine("\nSTEP 2: Simplified Groups");
+                foreach (KeyValuePair<int, List<string>> entry in this.simplified_groups)
+                {
+                    Console.WriteLine($"Group {entry.Key}");
+                    foreach (string val in this.simplified_groups[entry.Key])
+                        Console.WriteLine(val);
+                }
             }
         }
     }
