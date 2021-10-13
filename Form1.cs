@@ -29,7 +29,7 @@ namespace ALE1_Katerina
         // For simplification
         public List<string> truth_rows = new List<string>();
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
-        Dictionary<int, List<string>> simplified_groups = new Dictionary<int, List<string>>();
+        List<string> simplified_rows = new List<string>();
 
         public string formula_binary = "";
 
@@ -55,8 +55,12 @@ namespace ALE1_Katerina
             table_truth.ColumnStyles.Clear();
             table_truth.Controls.Clear();
 
+            table_simple.RowStyles.Clear();
+            table_simple.ColumnStyles.Clear();
+            table_simple.Controls.Clear();
+
             this.nr_of_ones_groups.Clear();
-            this.simplified_groups.Clear();
+            this.simplified_rows.Clear();
 
             this.formula_binary = " ";
 
@@ -67,7 +71,7 @@ namespace ALE1_Katerina
             AddNode(this.formula);              // recursive method initializes all nodes with their children/parent
             Draw_Truth_Table(this.operants);    // creates and draws truth table values
             Simplify();                         // simplifies truth tables
-
+            DrawSimpleTable();                  // draws table for simplified values
 
             lbl_binary.Text = " ";
             lbl_binary.Text = this.formula_binary;
@@ -197,7 +201,6 @@ namespace ALE1_Katerina
             double numOfRows = Math.Pow(2, numOfVariables); // number of rows for the truth values - without the variable/formula row
             Dictionary<char, double> each_var_numOfZeroes = new Dictionary<char, double>();
             Dictionary<char, bool> changeTruthValue = new Dictionary<char, bool>();
-            //bool changeTruthValue = false;
 
             // Simplification
             string temp_row = "";
@@ -246,7 +249,7 @@ namespace ALE1_Katerina
                             temp_table_value.Text = one_zero;
                             table_truth.Controls.Add(temp_table_value, col, row);
 
-                            // Simplification: add 0/1 to row string list
+                            // For simplification: add 0/1 to row string list
                             temp_row += one_zero;
 
                             // Set which variable's truth values need to switch to one/zero after the calculation
@@ -278,7 +281,7 @@ namespace ALE1_Katerina
                             temp_table_value.Text = result;
                             table_truth.Controls.Add(temp_table_value, col, row);
 
-                            // Simplification: add result to row string list
+                            // For simplification: add result to row string list
                             temp_row += result;
 
                             // Add the result to the front of the binary list
@@ -400,37 +403,27 @@ namespace ALE1_Katerina
 
             // Rows with result 0 SHOULD NOT be simplified
             List<string> simplified_truth_rows = new List<string>();
-            //Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
 
             // Initialise groups dictionary (based on nr of 1's)
             for (int i = 0; i <= this.operants.Count(); i++)
             {
                 this.nr_of_ones_groups.Add(i, new List<string>());
-                this.simplified_groups.Add(i, new List<string>());
+                //this.simplified_groups.Add(i, new List<string>());
             }
 
-            // Remove rows with result = 0, and the result from each string
+            /** STEP 1
+            *  Separate rows in groups depending on the nr of ones they have, no 1's, one 1, two 1's ... */
+
             foreach (string s_row in this.truth_rows)
             {
-                if (s_row.Last() == '1')
+                if (s_row.Last() == '1') // Ignore rows with result = 0
                 {
-                    string temp = s_row.Substring(0, s_row.Length - 1);
-                    simplified_truth_rows.Add(temp);
+                    string trimmed_row = s_row.Substring(0, s_row.Length - 1); // Remove result from end
+                    simplified_truth_rows.Add(trimmed_row);
 
-                    // TODO: Don't use a list, just do process here
+                    int nr_of_ones = trimmed_row.Count(one => one == '1');
+                    this.nr_of_ones_groups[nr_of_ones].Add(trimmed_row);
                 }
-            }
-
-            for (int i = 0; i < simplified_truth_rows.Count(); i++)
-            {
-                // Check for a match with every other row
-
-                /** STEP 1
-                 *  Separate rows in groups depending on the nr of ones they have, no 1's, one 1, two 1's ... */
-
-                int nr_of_ones = simplified_truth_rows[i].Count(one => one == '1');
-                this.nr_of_ones_groups[nr_of_ones].Add(simplified_truth_rows[i]);
-
             }
 
             /** STEP 2
@@ -466,14 +459,52 @@ namespace ALE1_Katerina
 
                             // If its the last pair, add the row to simplified groups
                             if (truth_value_index + 1 == this.operants.Count())
-                                this.simplified_groups[group.Key].Add(simplified_row);
+                            {
+                                this.simplified_rows.Add(simplified_row);
+                            }  
                         }
                     }
                 }
-            }
+            }            
+        }
 
-            /** STEP 3
-             *  Compare Groups and Simplify pairs */
+        private void DrawSimpleTable()
+        {
+            if (this.simplified_rows.Count > 0)
+            {
+                table_simple.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+                table_simple.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                table_simple.ColumnCount = this.operants.Count() + 1;
+                table_simple.RowCount = this.simplified_rows.Count + 2; // 1 for the Variables and 1 for for zeroes row
+
+                for (int row = 0; row < table_simple.RowCount; row++)
+                {
+                    for (int col = 0; col < table_simple.ColumnCount; col++)
+                    {
+                        Label temp_table_value = new Label();
+
+                        if (row == 0)
+                        {
+                            Console.WriteLine(col.ToString());
+                            if (col == this.operants.Count()) // last column: show formula
+                                temp_table_value.Text = this.formula;
+                            else // Show variable
+                                temp_table_value.Text = this.operants[col].Value.ToString();
+                        }
+                        else if (row == 1) // Fill with zeros
+                            temp_table_value.Text = "0";
+                        else
+                        {
+                            if (col < this.operants.Count()) // all but last column
+                                temp_table_value.Text = this.simplified_rows[row - 2][col].ToString();
+                            else
+                                temp_table_value.Text = "1";
+                        }
+
+                        table_simple.Controls.Add(temp_table_value, col, row);
+                    }
+                }
+            }
         }
 
         private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false) //double nrOfoffsets = -1
@@ -623,12 +654,8 @@ namespace ALE1_Katerina
                 }
 
                 Console.WriteLine("\nSTEP 2: Simplified Groups");
-                foreach (KeyValuePair<int, List<string>> entry in this.simplified_groups)
-                {
-                    Console.WriteLine($"Group {entry.Key}");
-                    foreach (string val in this.simplified_groups[entry.Key])
-                        Console.WriteLine(val);
-                }
+                foreach (string simplified_row in this.simplified_rows)
+                    Console.WriteLine(simplified_row);
             }
         }
     }
