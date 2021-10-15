@@ -29,6 +29,8 @@ namespace ALE1_Katerina
         // For simplification
         public List<string> truth_rows = new List<string>();
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
+
+        List<string> nr_of_zeros = new List<string>();
         List<string> simplified_rows = new List<string>();
 
         public string formula_binary = "";
@@ -406,24 +408,22 @@ namespace ALE1_Katerina
 
             // Initialise groups dictionary (based on nr of 1's)
             for (int i = 0; i <= this.operants.Count(); i++)
-            {
                 this.nr_of_ones_groups.Add(i, new List<string>());
-                //this.simplified_groups.Add(i, new List<string>());
-            }
 
             /** STEP 1
             *  Separate rows in groups depending on the nr of ones they have, no 1's, one 1, two 1's ... */
 
             foreach (string s_row in this.truth_rows)
             {
-                if (s_row.Last() == '1') // Ignore rows with result = 0
+                if (s_row.Last() == '1') // Don't simplify rows with result = 0
                 {
                     string trimmed_row = s_row.Substring(0, s_row.Length - 1); // Remove result from end
                     simplified_truth_rows.Add(trimmed_row);
 
                     int nr_of_ones = trimmed_row.Count(one => one == '1');
                     this.nr_of_ones_groups[nr_of_ones].Add(trimmed_row);
-                }
+                } else
+                    nr_of_zeros.Add(s_row); // Save the zeroes to draw them on table later
             }
 
             /** STEP 2
@@ -475,7 +475,7 @@ namespace ALE1_Katerina
                 table_simple.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
                 table_simple.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 table_simple.ColumnCount = this.operants.Count() + 1;
-                table_simple.RowCount = this.simplified_rows.Count + 2; // 1 for the Variables and 1 for for zeroes row
+                table_simple.RowCount = this.simplified_rows.Count() + this.nr_of_zeros.Count() + 1; // 1 for the Variables and 1 for for zeroes row
 
                 for (int row = 0; row < table_simple.RowCount; row++)
                 {
@@ -485,18 +485,21 @@ namespace ALE1_Katerina
 
                         if (row == 0)
                         {
-                            Console.WriteLine(col.ToString());
                             if (col == this.operants.Count()) // last column: show formula
                                 temp_table_value.Text = this.formula;
                             else // Show variable
                                 temp_table_value.Text = this.operants[col].Value.ToString();
                         }
-                        else if (row == 1) // Fill with zeros
-                            temp_table_value.Text = "0";
                         else
                         {
-                            if (col < this.operants.Count()) // all but last column
-                                temp_table_value.Text = this.simplified_rows[row - 2][col].ToString();
+                            if (row <= this.nr_of_zeros.Count())
+                                temp_table_value.Text = this.nr_of_zeros[row - 1][col].ToString();
+                            else if (col < this.operants.Count()) // all but last column
+                                temp_table_value.Text = this.simplified_rows[row - (this.nr_of_zeros.Count() + 1)][col].ToString();
+
+                            // last columns
+                            else if (row < this.nr_of_zeros.Count())
+                                temp_table_value.Text = "0";
                             else
                                 temp_table_value.Text = "1";
                         }
