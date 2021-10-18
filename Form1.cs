@@ -15,13 +15,21 @@ namespace ALE1_Katerina
     {
         public string formula = "";
         public int formula_index = 0;
-        Stack<INode> parent_stack = new Stack<INode>();
+        Stack<Operator> parent_stack = new Stack<Operator>();
 
         public List<TreeNode> tree_nodes = new List<TreeNode>();
         public List<INode> formula_nodes = new List<INode>(); // using interface + inheritance
 
-        public List<char> ascii_operators = new List<char>() {'~', '>', '=', '&', '|'};
-        //public List<char> ascii_operators = new List<char>() {'(' , ')', ','};
+        //public List<char> ascii_operators = new List<char>() { '~', '>', '=', '&', '|' };
+        public Dictionary<char, string> logic_notations = new Dictionary<char, string> { // ascii : notation
+            { '~', Char.ConvertFromUtf32(172) },
+            { '>', Char.ConvertFromUtf32(8658) },
+            { '=', Char.ConvertFromUtf32(8660) },
+            { '&', Char.ConvertFromUtf32(8743) },
+            { '|', Char.ConvertFromUtf32(8744) }
+        };
+        public string infix_formula = "";
+        public bool right_node = false;
 
         public List<Operator> operators = new List<Operator>();
         public List<Operant> operants = new List<Operant>();
@@ -31,7 +39,7 @@ namespace ALE1_Katerina
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
 
         List<string> nr_of_zeros = new List<string>();
-        List<string> simplified_rows = new List<string>();
+        List<string> simplified_rows = new List<string>();        
 
         public string formula_binary = "";
 
@@ -57,20 +65,26 @@ namespace ALE1_Katerina
             table_truth.ColumnStyles.Clear();
             table_truth.Controls.Clear();
 
+            this.nr_of_zeros.Clear();
+
             table_simple.RowStyles.Clear();
             table_simple.ColumnStyles.Clear();
             table_simple.Controls.Clear();
 
             this.nr_of_ones_groups.Clear();
             this.simplified_rows.Clear();
+            this.truth_rows.Clear();
 
             this.formula_binary = " ";
+            this.right_node = false;
+            this.infix_formula = "";
 
             // Get formula from text box //
             this.formula = tb_formula.Text.Replace(" ", ""); // --> remove spaces
             formula_index = 0;
 
             AddNode(this.formula);              // recursive method initializes all nodes with their children/parent
+            ConvertAsciiToInfix();
             Draw_Truth_Table(this.operants);    // creates and draws truth table values
             Simplify();                         // simplifies truth tables
             DrawSimpleTable();                  // draws table for simplified values
@@ -82,7 +96,7 @@ namespace ALE1_Katerina
             
 
             // DEBUG
-            _nodesDebug(false, true); // nodes | simplification
+            _nodesDebug(false, false); // nodes | simplification
 
             // Connect paint event to UI
             panel_tree.Paint += new PaintEventHandler(Draw_Tree);
@@ -121,7 +135,7 @@ namespace ALE1_Katerina
                     default: // Operants/Operators
 
                         // Add the nodes to their respective list
-                        if (ascii_operators.Contains(c)) {
+                        if (this.logic_notations.Keys.Contains(c)) { // ascii_operators.Contains(c)
                             n = new Operator(id_index, c, null, null,
                                 this.parent_stack.Count > 0 ? this.parent_stack.Peek().ID : -1);
                             this.operators.Add((Operator)n);
@@ -149,7 +163,7 @@ namespace ALE1_Katerina
 
                         // Add this in parent stack if operator
                         if (n.GetType() == typeof(Operator))
-                            this.parent_stack.Push(n);
+                            this.parent_stack.Push((Operator) n);
 
                         // Add it to the general list of nodes
                         if (n.GetType() != typeof(INode))
@@ -194,6 +208,66 @@ namespace ALE1_Katerina
                 }
             }
         }              
+
+        private void ConvertAsciiToInfix()
+        {
+            Get_Notation((Operator) this.formula_nodes[0]); // First node in formula list is always the head parent
+            lbl_notation.Text = infix_formula;
+        }
+
+        private void Get_Notation(Operator parent, int parent_pos = 0)
+        {
+            if ((parent_pos != 0) && (parent.Value != '~'))
+            {
+                this.infix_formula = this.infix_formula.Insert(parent_pos, ")");
+                this.infix_formula = this.infix_formula.Insert(parent_pos, this.logic_notations[parent.Value]);
+                this.infix_formula = this.infix_formula.Insert(parent_pos, "(");
+                parent_pos++;
+            } else
+                this.infix_formula = this.infix_formula.Insert(parent_pos, this.logic_notations[parent.Value]);
+
+            // LEFT CHILD
+            if (parent.Left_child != null) {
+                // if is operator
+                if (parent.Left_child.GetType() == typeof(Operator)) {
+                    if (parent.Value == '~')
+                        parent_pos++;
+
+                    Get_Notation((Operator)parent.Left_child, parent_pos);
+                }
+                // if is variable
+                else {
+                    if (parent.Value == '~')
+                    {
+                        parent_pos += 2;
+                        this.infix_formula = this.infix_formula.Insert(parent_pos - 1, ")");
+                        this.infix_formula = this.infix_formula.Insert(parent_pos - 1, "(");
+                    }
+
+                    this.infix_formula = this.infix_formula.Insert(parent_pos, parent.Left_child.Value.ToString());
+                    parent_pos++;
+                }
+            }
+
+            // RIGHT CHILD
+            if (parent.Right_child != null) {
+
+                // if root node's right child, reset position
+                if (parent.ID == this.formula_nodes[0].ID)
+                    parent_pos = this.infix_formula.Length - 1;
+
+                // if is operator
+                if (parent.Right_child.GetType() == typeof(Operator))
+                {
+                    Get_Notation((Operator)parent.Right_child, parent_pos + 1);
+                }
+                // if is variable
+                else
+                {
+                    this.infix_formula = this.infix_formula.Insert(parent_pos + 1, parent.Right_child.Value.ToString());
+                }
+            }
+        }
 
         private void Draw_Truth_Table(List<Operant> variables)
         {

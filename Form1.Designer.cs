@@ -44,6 +44,8 @@ namespace ALE1_Katerina
             this.table_truth = new System.Windows.Forms.TableLayoutPanel();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.table_simple = new System.Windows.Forms.TableLayoutPanel();
+            this.lbl_notation = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.tc_main.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -82,7 +84,7 @@ namespace ALE1_Katerina
             // lbl_vars
             // 
             this.lbl_vars.AutoSize = true;
-            this.lbl_vars.Location = new System.Drawing.Point(79, 76);
+            this.lbl_vars.Location = new System.Drawing.Point(97, 76);
             this.lbl_vars.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lbl_vars.Name = "lbl_vars";
             this.lbl_vars.Size = new System.Drawing.Size(35, 13);
@@ -103,7 +105,7 @@ namespace ALE1_Katerina
             // lbl_binary
             // 
             this.lbl_binary.AutoSize = true;
-            this.lbl_binary.Location = new System.Drawing.Point(79, 114);
+            this.lbl_binary.Location = new System.Drawing.Point(97, 114);
             this.lbl_binary.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lbl_binary.Name = "lbl_binary";
             this.lbl_binary.Size = new System.Drawing.Size(35, 13);
@@ -124,7 +126,7 @@ namespace ALE1_Katerina
             // lbl_hex
             // 
             this.lbl_hex.AutoSize = true;
-            this.lbl_hex.Location = new System.Drawing.Point(79, 170);
+            this.lbl_hex.Location = new System.Drawing.Point(97, 170);
             this.lbl_hex.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lbl_hex.Name = "lbl_hex";
             this.lbl_hex.Size = new System.Drawing.Size(35, 13);
@@ -635,11 +637,34 @@ namespace ALE1_Katerina
             this.table_simple.Size = new System.Drawing.Size(297, 360);
             this.table_simple.TabIndex = 14;
             // 
+            // lbl_notation
+            // 
+            this.lbl_notation.AutoSize = true;
+            this.lbl_notation.Location = new System.Drawing.Point(96, 218);
+            this.lbl_notation.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lbl_notation.Name = "lbl_notation";
+            this.lbl_notation.Size = new System.Drawing.Size(35, 13);
+            this.lbl_notation.TabIndex = 15;
+            this.lbl_notation.Text = "label3";
+            this.lbl_notation.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(24, 218);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(45, 13);
+            this.label5.TabIndex = 14;
+            this.label5.Text = "Notated";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(604, 424);
+            this.Controls.Add(this.lbl_notation);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.tc_main);
             this.Controls.Add(this.lbl_hex);
             this.Controls.Add(this.label4);
@@ -679,6 +704,8 @@ namespace ALE1_Katerina
         private System.Windows.Forms.Panel panel_tree;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TableLayoutPanel table_simple;
+        private System.Windows.Forms.Label lbl_notation;
+        private System.Windows.Forms.Label label5;
     }
 }
 
