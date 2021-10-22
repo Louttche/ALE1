@@ -41,8 +41,10 @@ namespace ALE1_Katerina
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.panel_tree = new System.Windows.Forms.Panel();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.lbl_norm = new System.Windows.Forms.Label();
             this.table_truth = new System.Windows.Forms.TableLayoutPanel();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.lbl_norm_simp = new System.Windows.Forms.Label();
             this.table_simple = new System.Windows.Forms.TableLayoutPanel();
             this.lbl_notation = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -143,7 +145,7 @@ namespace ALE1_Katerina
             this.tc_main.Margin = new System.Windows.Forms.Padding(2);
             this.tc_main.Name = "tc_main";
             this.tc_main.SelectedIndex = 0;
-            this.tc_main.Size = new System.Drawing.Size(321, 403);
+            this.tc_main.Size = new System.Drawing.Size(488, 403);
             this.tc_main.TabIndex = 13;
             // 
             // tabPage1
@@ -154,7 +156,7 @@ namespace ALE1_Katerina
             this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage1.Size = new System.Drawing.Size(313, 377);
+            this.tabPage1.Size = new System.Drawing.Size(480, 377);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Tree";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -169,15 +171,24 @@ namespace ALE1_Katerina
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.lbl_norm);
             this.tabPage2.Controls.Add(this.table_truth);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(2);
-            this.tabPage2.Size = new System.Drawing.Size(313, 377);
+            this.tabPage2.Size = new System.Drawing.Size(480, 377);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Truth Table";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // lbl_norm
+            // 
+            this.lbl_norm.AutoSize = true;
+            this.lbl_norm.Location = new System.Drawing.Point(14, 12);
+            this.lbl_norm.Name = "lbl_norm";
+            this.lbl_norm.Size = new System.Drawing.Size(0, 13);
+            this.lbl_norm.TabIndex = 1;
             // 
             // table_truth
             // 
@@ -196,7 +207,7 @@ namespace ALE1_Katerina
             this.table_truth.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.table_truth.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.table_truth.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-            this.table_truth.Location = new System.Drawing.Point(14, 15);
+            this.table_truth.Location = new System.Drawing.Point(14, 44);
             this.table_truth.Margin = new System.Windows.Forms.Padding(2);
             this.table_truth.Name = "table_truth";
             this.table_truth.RowCount = 2;
@@ -400,18 +411,27 @@ namespace ALE1_Katerina
             this.table_truth.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.table_truth.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.table_truth.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
-            this.table_truth.Size = new System.Drawing.Size(297, 360);
+            this.table_truth.Size = new System.Drawing.Size(464, 331);
             this.table_truth.TabIndex = 0;
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.lbl_norm_simp);
             this.tabPage3.Controls.Add(this.table_simple);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(313, 377);
+            this.tabPage3.Size = new System.Drawing.Size(480, 377);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Simplified";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // lbl_norm_simp
+            // 
+            this.lbl_norm_simp.AutoSize = true;
+            this.lbl_norm_simp.Location = new System.Drawing.Point(14, 12);
+            this.lbl_norm_simp.Name = "lbl_norm_simp";
+            this.lbl_norm_simp.Size = new System.Drawing.Size(0, 13);
+            this.lbl_norm_simp.TabIndex = 16;
             // 
             // table_simple
             // 
@@ -430,7 +450,7 @@ namespace ALE1_Katerina
             this.table_simple.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.table_simple.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.table_simple.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-            this.table_simple.Location = new System.Drawing.Point(14, 15);
+            this.table_simple.Location = new System.Drawing.Point(14, 44);
             this.table_simple.Margin = new System.Windows.Forms.Padding(2);
             this.table_simple.Name = "table_simple";
             this.table_simple.RowCount = 2;
@@ -634,7 +654,7 @@ namespace ALE1_Katerina
             this.table_simple.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.table_simple.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.table_simple.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 16F));
-            this.table_simple.Size = new System.Drawing.Size(297, 360);
+            this.table_simple.Size = new System.Drawing.Size(464, 331);
             this.table_simple.TabIndex = 14;
             // 
             // lbl_notation
@@ -662,7 +682,7 @@ namespace ALE1_Katerina
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(604, 424);
+            this.ClientSize = new System.Drawing.Size(772, 424);
             this.Controls.Add(this.lbl_notation);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.tc_main);
@@ -681,7 +701,9 @@ namespace ALE1_Katerina
             this.tc_main.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -706,6 +728,8 @@ namespace ALE1_Katerina
         private System.Windows.Forms.TableLayoutPanel table_simple;
         private System.Windows.Forms.Label lbl_notation;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lbl_norm;
+        private System.Windows.Forms.Label lbl_norm_simp;
     }
 }
 

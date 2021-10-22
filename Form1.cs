@@ -38,8 +38,9 @@ namespace ALE1_Katerina
         public List<string> truth_rows = new List<string>();
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
 
+
         List<string> nr_of_zeros = new List<string>();
-        List<string> simplified_rows = new List<string>();        
+        List<string> simplified_rows = new List<string>();
 
         public string formula_binary = "";
 
@@ -88,12 +89,12 @@ namespace ALE1_Katerina
             Draw_Truth_Table(this.operants);    // creates and draws truth table values
             Simplify();                         // simplifies truth tables
             DrawSimpleTable();                  // draws table for simplified values
+            Normalize();                        // normalizes the truth table and its simplified form
 
             lbl_binary.Text = " ";
             lbl_binary.Text = this.formula_binary;
             FillInZeroes(this.formula_binary);
-            ShowHex(this.formula_binary);
-            
+            ShowHex(this.formula_binary);       // shows the hexadecimal form of the formula
 
             // DEBUG
             _nodesDebug(false, false); // nodes | simplification
@@ -176,38 +177,74 @@ namespace ALE1_Katerina
             }
         }
 
-        private void InitializeTreeNodes(string formula)
+        private void Draw_Tree(object sender, PaintEventArgs e)
         {
-            int i = 0;
-            int parent_id = -1;
-            TreeNode n = null;
+            var g = e.Graphics;
+            System.Drawing.Color color = System.Drawing.Color.Black;
 
-            foreach (char s in formula)
+            // TODO: Find a way to resize if tree goes out of bounds
+            //panel_tree.Width = 350;
+
+            // Set top center values
+            int x_coord_init = (panel_tree.Width / 2) - 30;
+            int y_coord_init = 20;
+            int radius = 40;
+
+            DrawTreeChild(operators[0], x_coord_init, y_coord_init, radius, g);
+        }
+
+        private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false)
+        {
+            System.Drawing.Color color = System.Drawing.Color.Black;
+
+            if (debug == true) { Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")"); }
+            // TODO: Set radius according to node char (in the DrawNode method)
+            // Draw operator
+            o.DrawNode(x, y, radius, color, g);
+
+            // Set up offsets for this node
+            if (x_offset == 0)
+                x_offset = Math.Pow(2, operators.Count() - 1); // Correlates to the number of levels the tree will have
+            else
+                x_offset = x_offset - (x_offset / 2);
+
+            double y_offset = radius * 2;
+            //double line_length = Math.Sqrt(Math.Pow(line_x - radius, 2) + Math.Pow(line_y - radius, 2)); // Pythagoras
+
+            // Draw children
+            if (o.Left_child != null)
             {
-                if (s == ')')
-                    parent_id = -1;
-                else if (s == '(')
-                    parent_id = i - 1;
-                else if (s == ',')
-                    ;
-                else // is operant/operator
-                {
-                    n = new TreeNode(i, s, null, null);
-                    if (parent_id >= 0) // Has parent/root
-                    {
-                        foreach (TreeNode p in tree_nodes)
-                        {
-                            if (p.ID == parent_id)
-                                p.AddChild(n);
-                        }
-                    }
+                int x_child = (int)(x - x_offset * radius);
+                int y_child = (int)(y + y_offset);
 
-                    if (n != null)
-                        tree_nodes.Add(n);
-                    i++;
+                if (o.Left_child is Operator)
+                    // If child is operator, call this method again
+                    DrawTreeChild((Operator)o.Left_child, x_child, y_child, radius, g, x_offset);
+                else
+                {
+                    // Draw left operant child
+                    o.Left_child.DrawNode(x_child, y_child, radius, color, g);
+                    if (debug == true) { Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
-        }              
+
+            if (o.Right_child != null)
+            {
+                int x_child = (int)(x + x_offset * radius);
+                int y_child = (int)(y + y_offset);
+
+                if (o.Right_child is Operator)
+                    // If child is operator, call this method again
+                    DrawTreeChild((Operator)o.Right_child, x_child, y_child, radius, g, x_offset);
+                else
+                {
+                    // Draw right operant child
+                    o.Right_child.DrawNode(x_child, y_child, radius, color, g);
+                    if (debug == true) { Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
+                }
+            }
+
+        }
 
         private void ConvertAsciiToInfix()
         {
@@ -457,20 +494,30 @@ namespace ALE1_Katerina
             return result;
         }
 
-        private void Draw_Tree(object sender, PaintEventArgs e)
+        private void ShowHex(string binary_s)
         {
-            var g = e.Graphics;
-            System.Drawing.Color color = System.Drawing.Color.Black;
+            lbl_hex.Text = "";
+            double pos_value = 8; // 8, 4, 2, 1
+            int each_sum = 0;
+            for (int i = 1; i <= binary_s.Length; i++)
+            {
+                // Add to sum
+                if (binary_s[i - 1] == '1')
+                    each_sum += (int)pos_value;
 
-            // TODO: Find a way to resize if tree goes out of bounds
-            //panel_tree.Width = 350;
+                if (i % 4 == 0)
+                {
+                    // Convert and add the sum of the current '4' binary digits into hex
+                    //if (each_sum > 0) // Don't show 0 hex values
+                    lbl_hex.Text += each_sum.ToString("X");
 
-            // Set top center values
-            int x_coord_init = (panel_tree.Width / 2) - 30;
-            int y_coord_init = 20;
-            int radius = 40;
-
-            DrawTreeChild(operators[0], x_coord_init, y_coord_init, radius, g);
+                    // Reset sum and j
+                    each_sum = 0;
+                    pos_value = 8;
+                }
+                else
+                    pos_value = pos_value / 2;
+            }
         }
 
         private void Simplify()
@@ -502,10 +549,29 @@ namespace ALE1_Katerina
 
             /** STEP 2
              *  Compare Groups and Simplify pairs */
+            Simplify_CompareGroups(this.nr_of_ones_groups);
+            
+        }
 
-            KeyValuePair<int, List<string>> last_group = this.nr_of_ones_groups.Last();
-            foreach (KeyValuePair<int, List<string>> group in this.nr_of_ones_groups)
+        private void Simplify_CompareGroups(Dictionary<int, List<string>> groups)
+        {
+            // Append all of dictionary's values (List<string>) to one list
+            List<string> old_simplified = new List<string>();
+            foreach (KeyValuePair<int, List<string>> group in groups)
             {
+                if (group.Value.Count() > 0)
+                    old_simplified.AddRange(group.Value);
+            }
+
+            Dictionary<int, List<string>> simplified_groups = new Dictionary<int, List<string>>(); // After simplification groups
+
+            KeyValuePair<int, List<string>> last_group = groups.Last();
+
+            foreach (KeyValuePair<int, List<string>> group in groups)
+            {
+                // Initialize blank table/dictionary
+                simplified_groups.Add(group.Key, new List<string>());
+
                 // Discard last group, can't compare it with anything more
                 if (last_group.Equals(group))
                     break;
@@ -514,7 +580,7 @@ namespace ALE1_Katerina
                 foreach (string s_row in group.Value)
                 {
                     // Compare with each row of the group that comes next
-                    foreach (string other_row in this.nr_of_ones_groups[group.Key + 1])
+                    foreach (string other_row in groups[group.Key + 1])
                     {
                         // Compare each character
                         int differences = 0;
@@ -528,18 +594,44 @@ namespace ALE1_Katerina
                                     break; // Ignore rows with more than 1 differences
 
                                 simplified_row += '*';
-                            } else // it matches
+                            }
+                            else // it matches
                                 simplified_row += s_row[truth_value_index];
 
                             // If its the last pair, add the row to simplified groups
                             if (truth_value_index + 1 == this.operants.Count())
                             {
-                                this.simplified_rows.Add(simplified_row);
-                            }  
+                                if (!this.simplified_rows.Contains(simplified_row))
+                                {
+                                    this.simplified_rows.Add(simplified_row);
+                                    simplified_groups[group.Key].Add(simplified_row);
+                                }
+                            }
                         }
                     }
                 }
-            }            
+            }
+
+            Console.WriteLine("\nOld results:");
+            foreach (string nr in old_simplified)
+                Console.WriteLine("\t" + nr);
+            Console.WriteLine("\nNew results:");
+            foreach (string nr in this.simplified_rows)
+                Console.WriteLine("\t" + nr);
+
+            // if the current table matches the previous table (no more simplification can be done)
+            if (this.simplified_rows.Count > 1)
+            {
+                for (int i = 0; i < this.simplified_rows.Count; i++)
+                {
+                    if ((old_simplified.Count != this.simplified_rows.Count) || (old_simplified[i] != this.simplified_rows[i]) )
+                    {
+                        // Does not match so simplify more
+                        this.simplified_rows.Clear();
+                        this.Simplify_CompareGroups(simplified_groups);
+                    }
+                }
+            }
         }
 
         private void DrawSimpleTable()
@@ -559,6 +651,7 @@ namespace ALE1_Katerina
 
                         if (row == 0)
                         {
+                            temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
                             if (col == this.operants.Count()) // last column: show formula
                                 temp_table_value.Text = this.formula;
                             else // Show variable
@@ -582,58 +675,63 @@ namespace ALE1_Katerina
                     }
                 }
             }
+            else
+                lbl_norm_simp.Text = "Nothing to simplify...";
         }
 
-        private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false) //double nrOfoffsets = -1
+        private void Normalize()
         {
-            System.Drawing.Color color = System.Drawing.Color.Black;
+            string result = "";
 
-            if (debug == true) { Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")"); }
-            // TODO: Set radius according to node char (in the DrawNode method)
-            // Draw operator
-            o.DrawNode(x, y, radius, color, g);
-
-            // Set up offsets for this node
-            if (x_offset == 0)
-                x_offset = Math.Pow(2, operators.Count() - 1); // Correlates to the number of levels the tree will have
-            else
-                x_offset = x_offset - (x_offset / 2);
-
-            double y_offset = radius * 2;
-            //double line_length = Math.Sqrt(Math.Pow(line_x - radius, 2) + Math.Pow(line_y - radius, 2)); // Pythagoras
-
-            // Draw children
-            if (o.Left_child != null)
+            // Normalize the whole truth table
+            foreach (string t_row in this.truth_rows.Where(s => s.EndsWith("1")))
             {
-                int x_child = (int)(x - x_offset * radius);
-                int y_child = (int)(y + y_offset);
+                result += "(";
 
-                if (o.Left_child is Operator)
-                    // If child is operator, call this method again
-                    DrawTreeChild((Operator)o.Left_child, x_child, y_child, radius, g, x_offset);
-                else
+                for (int i = 0; i < this.operants.Count(); i++) // value for each variable (don't include result)
                 {
-                    // Draw left operant child
-                    o.Left_child.DrawNode(x_child, y_child, radius, color, g);
-                    if (debug == true) { Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
-                }
-            }
+                    if (t_row[i] == '0')
+                        result += this.logic_notations['~'];
 
-            if (o.Right_child != null)
+                    result += this.operants[i].Value;
+
+                    // if its not the last variable, add an AND char at the end
+                    if (i + 1 < this.operants.Count())
+                        result += this.logic_notations['&'];
+                }
+
+                result += ")" + this.logic_notations['|'];
+            }
+            lbl_norm.Font = new Font(Label.DefaultFont, FontStyle.Bold);
+            lbl_norm.Text = result.Substring(0, result.Length - 1); // remove last character that is the extra '|'
+
+
+            // Normalize the simplified truth table
+            result = "";
+            foreach (string s_row in this.simplified_rows)
             {
-                int x_child = (int)(x + x_offset * radius);
-                int y_child = (int)(y + y_offset);
-
-                if (o.Right_child is Operator)
-                    // If child is operator, call this method again
-                    DrawTreeChild((Operator)o.Right_child, x_child, y_child, radius, g, x_offset);
-                else
+                result += "(";
+                for (int i = 0; i < s_row.Length; i++)
                 {
-                    // Draw right operant child
-                    o.Right_child.DrawNode(x_child, y_child, radius, color, g);
-                    if (debug == true) { Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
+                    if (s_row[i] == '0')
+                        result += this.logic_notations['~'];
+                    else if (s_row[i] == '*')
+                        break;
+
+                    result += this.operants[i].Value;
+
+                    if (i + 1 < s_row.Length)
+                        result += this.logic_notations['&'];
                 }
+
+                if (result.Last() == Convert.ToChar(this.logic_notations['&']))
+                    result = result.Substring(0, result.Length - 1);
+
+                result += ")" + this.logic_notations['|'];
             }
+            lbl_norm_simp.Font = new Font(Label.DefaultFont, FontStyle.Bold);
+            if (result.Length > 0)
+                lbl_norm_simp.Text = result.Substring(0, result.Length - 1); // remove last character that is the extra '|'
 
         }
 
@@ -647,32 +745,6 @@ namespace ALE1_Katerina
 
             // cut the last 2 chars (", ") from string
             lbl_vars.Text = var_string.Substring(0, var_string.Length - 2);
-        }
-
-        private void ShowHex(string binary_s)
-        {
-            lbl_hex.Text = "";
-            double pos_value = 8; // 8, 4, 2, 1
-            int each_sum = 0;
-            for (int i = 1; i <= binary_s.Length; i++)
-            {
-                // Add to sum
-                if (binary_s[i - 1] == '1')
-                    each_sum += (int)pos_value;
-
-                if (i % 4 == 0)
-                {
-                    // Convert and add the sum of the current '4' binary digits into hex
-                    //if (each_sum > 0) // Don't show 0 hex values
-                    lbl_hex.Text += each_sum.ToString("X");
-
-                    // Reset sum and j
-                    each_sum = 0;
-                    pos_value = 8;
-                }
-                else
-                    pos_value = pos_value / 2;
-            }
         }
 
         private string FillInZeroes(string binary_s)
