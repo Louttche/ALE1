@@ -19,8 +19,10 @@ namespace ALE1_Katerina
         public float Radius { get; set; }
         public bool Truth_value { get; set; }
         public bool Drawn { get; set; }
+        
+        public Form1 Form;
 
-        public Operator(int id, char value, INode left_child = null, INode right_child = null, int parent_id = -1)
+        public Operator(int id, char value, Form1 form, INode left_child = null, INode right_child = null, int parent_id = -1)
         {
             this.ID = id;
             this.Value = value;
@@ -28,6 +30,7 @@ namespace ALE1_Katerina
             this.Right_child = right_child;
             this.Parent_ID = parent_id;
             this.Drawn = false;
+            this.Form = form;
         }
 
         public void AddChild(INode child)
@@ -48,6 +51,18 @@ namespace ALE1_Katerina
 
         public void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g)
         {
+            // Update node's location in form list
+            //foreach (INode fn in this.Form.formula_nodes)
+            //{
+            //    if (fn.ID == this.ID)
+            //    {
+            //        fn.X_coord = x;
+            //        fn.Y_coord = y;
+            //        fn.Radius = r;
+            //        break;
+            //    }
+            //}
+
             this.X_coord = x;
             this.Y_coord = y;
             this.Radius = r;

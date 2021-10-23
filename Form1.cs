@@ -18,7 +18,7 @@ namespace ALE1_Katerina
         Stack<Operator> parent_stack = new Stack<Operator>();
 
         public List<TreeNode> tree_nodes = new List<TreeNode>();
-        public List<INode> formula_nodes = new List<INode>(); // using interface + inheritance
+        public List<INode> formula_nodes = new List<INode>();
 
         //public List<char> ascii_operators = new List<char>() { '~', '>', '=', '&', '|' };
         public Dictionary<char, string> logic_notations = new Dictionary<char, string> { // ascii : notation
@@ -93,11 +93,10 @@ namespace ALE1_Katerina
 
             lbl_binary.Text = " ";
             lbl_binary.Text = this.formula_binary;
-            FillInZeroes(this.formula_binary);
-            ShowHex(this.formula_binary);       // shows the hexadecimal form of the formula
+            Convert2Hex(this.formula_binary);       // shows the hexadecimal form of the formula
 
             // DEBUG
-            _nodesDebug(false, false); // nodes | simplification
+            _nodesDebug(false, true, false); // nodes | tree | simplification
 
             // Connect paint event to UI
             panel_tree.Paint += new PaintEventHandler(Draw_Tree);
@@ -137,12 +136,12 @@ namespace ALE1_Katerina
 
                         // Add the nodes to their respective list
                         if (this.logic_notations.Keys.Contains(c)) { // ascii_operators.Contains(c)
-                            n = new Operator(id_index, c, null, null,
+                            n = new Operator(id_index, c, this, null, null,
                                 this.parent_stack.Count > 0 ? this.parent_stack.Peek().ID : -1);
                             this.operators.Add((Operator)n);
                         }
                         else {
-                            n = new Operant(id_index, c,
+                            n = new Operant(id_index, c, this,
                                 this.parent_stack.Count > 0 ? this.parent_stack.Peek().ID : -1);
 
                             // Don't add if same operant already exists.
@@ -177,7 +176,7 @@ namespace ALE1_Katerina
             }
         }
 
-        private void Draw_Tree(object sender, PaintEventArgs e)
+        public void Draw_Tree(object sender, PaintEventArgs e)
         {
             var g = e.Graphics;
             System.Drawing.Color color = System.Drawing.Color.Black;
@@ -190,7 +189,7 @@ namespace ALE1_Katerina
             int y_coord_init = 20;
             int radius = 40;
 
-            DrawTreeChild(operators[0], x_coord_init, y_coord_init, radius, g);
+            DrawTreeChild((Operator) this.formula_nodes[0], x_coord_init, y_coord_init, radius, g);
         }
 
         private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false)
@@ -254,7 +253,8 @@ namespace ALE1_Katerina
 
         private void Get_Notation(Operator parent, int parent_pos = 0)
         {
-            if ((parent_pos != 0) && (parent.Value != '~'))
+            // if not root node, and not negation, add child with () around it
+            if (parent.ID != operators[0].ID && parent.Value != '~')
             {
                 this.infix_formula = this.infix_formula.Insert(parent_pos, ")");
                 this.infix_formula = this.infix_formula.Insert(parent_pos, this.logic_notations[parent.Value]);
@@ -309,7 +309,6 @@ namespace ALE1_Katerina
         private void Draw_Truth_Table(List<Operant> variables)
         {
             int numOfVariables = variables.Count();
-            Console.WriteLine("Number of  vars this time: " + numOfVariables);
             int numOfColumns = numOfVariables + 1;
             double numOfRows = Math.Pow(2, numOfVariables); // number of rows for the truth values - without the variable/formula row
             Dictionary<char, double> each_var_numOfZeroes = new Dictionary<char, double>();
@@ -422,6 +421,9 @@ namespace ALE1_Katerina
                 }
                 // End of Row
             }
+
+            //Remove the spaces from the string
+            this.formula_binary = this.formula_binary.Replace(" ", "");
         }
 
         private int Get_Result(Operator o)
@@ -494,11 +496,14 @@ namespace ALE1_Katerina
             return result;
         }
 
-        private void ShowHex(string binary_s)
+        private void Convert2Hex(string binary_s)
         {
+            binary_s = FillInZeroes(binary_s);
+
             lbl_hex.Text = "";
             double pos_value = 8; // 8, 4, 2, 1
             int each_sum = 0;
+
             for (int i = 1; i <= binary_s.Length; i++)
             {
                 // Add to sum
@@ -511,13 +516,41 @@ namespace ALE1_Katerina
                     //if (each_sum > 0) // Don't show 0 hex values
                     lbl_hex.Text += each_sum.ToString("X");
 
-                    // Reset sum and j
+                    // Reset sum and pos_value
                     each_sum = 0;
                     pos_value = 8;
                 }
                 else
                     pos_value = pos_value / 2;
             }
+        }
+
+        private string FillInZeroes(string binary_s)
+        {
+            
+            int s_length = binary_s.Length;
+            // If length is 'missing' 0s for hex, add them in front of string //
+            if (s_length % 4 != 0)
+            {
+                // add 2 0's if length is even
+                if (s_length % 2 == 0)
+                {
+                    Console.WriteLine("lalal");
+                    binary_s = "00" + binary_s;
+                }
+                // add 1/3 0's if odd
+                else
+                {
+                    // if the remainder is 1 or bigger than 3, add 3 0's
+                    if ((s_length % 4 > 3) || (s_length % 4 == 1))
+                        binary_s = "000" + binary_s;
+                    // else add 1 0's
+                    else
+                        binary_s = '0' + binary_s;
+                }
+            }
+
+            return binary_s;
         }
 
         private void Simplify()
@@ -612,15 +645,8 @@ namespace ALE1_Katerina
                 }
             }
 
-            Console.WriteLine("\nOld results:");
-            foreach (string nr in old_simplified)
-                Console.WriteLine("\t" + nr);
-            Console.WriteLine("\nNew results:");
-            foreach (string nr in this.simplified_rows)
-                Console.WriteLine("\t" + nr);
-
             // if the current table matches the previous table (no more simplification can be done)
-            if (this.simplified_rows.Count > 1)
+            if (this.simplified_rows.Count >= 1)
             {
                 for (int i = 0; i < this.simplified_rows.Count; i++)
                 {
@@ -629,9 +655,13 @@ namespace ALE1_Katerina
                         // Does not match so simplify more
                         this.simplified_rows.Clear();
                         this.Simplify_CompareGroups(simplified_groups);
+                        break;
                     }
                 }
             }
+            // if empty but has simplified before, set previous result as result
+            else if ((this.simplified_rows.Count < 1) && (old_simplified.Last().Any(s => s == '*')))
+                this.simplified_rows = old_simplified;
         }
 
         private void DrawSimpleTable()
@@ -747,32 +777,8 @@ namespace ALE1_Katerina
             lbl_vars.Text = var_string.Substring(0, var_string.Length - 2);
         }
 
-        private string FillInZeroes(string binary_s)
-        {
-            int s_length = binary_s.Length;
-            // If length is 'missing' 0s for hex, add them in front of string //
-            if (s_length % 4 != 0)
-            {
-                // add 2 0's if length is even
-                if (s_length % 2 == 0)
-                    binary_s = "00" + binary_s;
-                // add 1/3 0's if odd
-                else
-                {
-                    // if the remainder is 1 or bigger than 3, add 3 0's
-                    if ((s_length % 4 > 3) || (s_length % 4 == 1))
-                        binary_s = "000" + binary_s;
-                    // else add 1 0's
-                    else
-                        binary_s = '0' + binary_s;
-                }
-            }
-
-            return binary_s;
-        }
-
         // DEBUG
-        private void _nodesDebug(bool debugNodes = true, bool debugSimplification = true)
+        private void _nodesDebug(bool debugNodes = true, bool debugTree = true, bool debugSimplification = true)
         {
 
             Console.WriteLine("\n\nDEBUG\n");
@@ -789,6 +795,15 @@ namespace ALE1_Katerina
                         Console.WriteLine("\tRC: {0}", x.Right_child.Value);
                 }
             }
+
+            //if (debugTree)
+            //{
+            //    Console.WriteLine("DRAW TREE");
+            //    foreach (Operant n in this.operants)
+            //        Console.WriteLine($"Node '{n.Value}' drawn at (x, y) : ({n.X_coord}, {n.Y_coord})");
+            //    foreach (Operator n in this.operators)
+            //        Console.WriteLine($"Node '{n.Value}' drawn at (x, y) : ({n.X_coord}, {n.Y_coord})");
+            //}
 
             if (debugSimplification)
             {

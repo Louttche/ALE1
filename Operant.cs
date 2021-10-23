@@ -18,16 +18,31 @@ namespace ALE1_Katerina
         public bool Truth_value { get; set; }
         public bool Drawn { get; set; }
 
-        public Operant(int id, char value, int parent_id = -1)
+        public Form1 Form;
+
+        public Operant(int id, char value, Form1 form, int parent_id = -1)
         {
             this.ID = id;
             this.Value = value;
             this.Parent_ID = parent_id;
             this.Drawn = false;
+            this.Form = form;
         }
 
         public void DrawNode(int x, int y, int r, Color c, Graphics g)
         {
+            // Update node's location in form list
+            //foreach (INode fn in this.Form.formula_nodes)
+            //{
+            //    if (fn.ID == this.ID)
+            //    {
+            //        fn.X_coord = x;
+            //        fn.Y_coord = y;
+            //        fn.Radius = r;
+            //        break;
+            //    }
+            //}
+
             this.X_coord = x;
             this.Y_coord = y;
             this.Radius = r;
