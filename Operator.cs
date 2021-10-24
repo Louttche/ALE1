@@ -51,17 +51,7 @@ namespace ALE1_Katerina
 
         public void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g)
         {
-            // Update node's location in form list
-            //foreach (INode fn in this.Form.formula_nodes)
-            //{
-            //    if (fn.ID == this.ID)
-            //    {
-            //        fn.X_coord = x;
-            //        fn.Y_coord = y;
-            //        fn.Radius = r;
-            //        break;
-            //    }
-            //}
+            Console.WriteLine($"Node {this.Value} drawn at: {x},{y}");
 
             this.X_coord = x;
             this.Y_coord = y;

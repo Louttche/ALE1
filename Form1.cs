@@ -17,7 +17,7 @@ namespace ALE1_Katerina
         public int formula_index = 0;
         Stack<Operator> parent_stack = new Stack<Operator>();
 
-        public List<TreeNode> tree_nodes = new List<TreeNode>();
+        //public List<TreeNode> tree_nodes = new List<TreeNode>();
         public List<INode> formula_nodes = new List<INode>();
 
         //public List<char> ascii_operators = new List<char>() { '~', '>', '=', '&', '|' };
@@ -30,7 +30,6 @@ namespace ALE1_Katerina
             { '%', Char.ConvertFromUtf32(8892) }
         };
         public string infix_formula = "";
-        public bool right_node = false;
 
         public List<Operator> operators = new List<Operator>();
         public List<Operant> operants = new List<Operant>();
@@ -38,7 +37,6 @@ namespace ALE1_Katerina
         // For Simplification
         public List<string> truth_rows = new List<string>();
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
-        List<string> nr_of_zeros = new List<string>();
         List<string> simplified_rows = new List<string>();
 
         public string formula_binary = "";
@@ -60,8 +58,6 @@ namespace ALE1_Katerina
             table_truth.ColumnStyles.Clear();
             table_truth.Controls.Clear();
 
-            this.nr_of_zeros.Clear();
-
             table_simple.RowStyles.Clear();
             table_simple.ColumnStyles.Clear();
             table_simple.Controls.Clear();
@@ -71,7 +67,6 @@ namespace ALE1_Katerina
             this.truth_rows.Clear();
 
             this.formula_binary = " ";
-            this.right_node = false;
             this.infix_formula = "";
 
             // Get formula from text box //
@@ -239,7 +234,6 @@ namespace ALE1_Katerina
                     if (debug == true) { Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
-
         }
 
         private void ConvertAsciiToInfix()
@@ -400,7 +394,6 @@ namespace ALE1_Katerina
                             {
                                 if (changeTruthValue[operant_var.Value] == true)
                                 {
-                                    //operant_var.Truth_value = !operant_var.Truth_value; // DEFAULT (doesnt work when there is more than 1 of the same variables)
                                     // Find all nodes with the same operant and set their truth value
                                     IEnumerable<INode> ns = formula_nodes.Where(n => n.Value == operant_var.Value);
                                     foreach (INode n in ns)
@@ -535,7 +528,6 @@ namespace ALE1_Katerina
                 // add 2 0's if length is even
                 if (s_length % 2 == 0)
                 {
-                    Console.WriteLine("lalal");
                     binary_s = "00" + binary_s;
                 }
                 // add 1/3 0's if odd
@@ -576,8 +568,7 @@ namespace ALE1_Katerina
 
                     int nr_of_ones = trimmed_row.Count(one => one == '1');
                     this.nr_of_ones_groups[nr_of_ones].Add(trimmed_row);
-                } else
-                    nr_of_zeros.Add(s_row); // Save the zeroes to draw them on table later
+                }
             }
 
             /** STEP 2
@@ -666,12 +657,15 @@ namespace ALE1_Katerina
 
         private void DrawSimpleTable()
         {
+            List<string> zero_rows = new List<string>();
+            zero_rows.AddRange(this.truth_rows.Where(s => s.Last() == '0'));
+
             if (this.simplified_rows.Count > 0)
             {
                 table_simple.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
                 table_simple.AutoSizeMode = AutoSizeMode.GrowAndShrink;
                 table_simple.ColumnCount = this.operants.Count() + 1;
-                table_simple.RowCount = this.simplified_rows.Count() + this.nr_of_zeros.Count() + 1; // 1 for the Variables and 1 for for zeroes row
+                table_simple.RowCount = this.simplified_rows.Count() + zero_rows.Count() + 1; // 1 for the Variables and 1 for for zeroes row
 
                 for (int row = 0; row < table_simple.RowCount; row++)
                 {
@@ -691,13 +685,13 @@ namespace ALE1_Katerina
                         }
                         else
                         {
-                            if (row <= this.nr_of_zeros.Count())
-                                temp_table_value.Text = this.nr_of_zeros[row - 1][col].ToString();
+                            if (row <= zero_rows.Count())
+                                temp_table_value.Text = zero_rows[row - 1][col].ToString();
                             else if (col < this.operants.Count()) // all but last column
-                                temp_table_value.Text = this.simplified_rows[row - (this.nr_of_zeros.Count() + 1)][col].ToString();
+                                temp_table_value.Text = this.simplified_rows[row - (zero_rows.Count() + 1)][col].ToString();
 
                             // last columns
-                            else if (row < this.nr_of_zeros.Count())
+                            else if (row < zero_rows.Count())
                                 temp_table_value.Text = "0";
                             else
                                 temp_table_value.Text = "1";
