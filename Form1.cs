@@ -21,12 +21,13 @@ namespace ALE1_Katerina
         public List<INode> formula_nodes = new List<INode>();
 
         //public List<char> ascii_operators = new List<char>() { '~', '>', '=', '&', '|' };
-        public Dictionary<char, string> logic_notations = new Dictionary<char, string> { // ascii : notation
+        public Dictionary<char, string> infix_notations = new Dictionary<char, string> { // ascii : notation
             { '~', Char.ConvertFromUtf32(172) },
             { '>', Char.ConvertFromUtf32(8658) },
             { '=', Char.ConvertFromUtf32(8660) },
             { '&', Char.ConvertFromUtf32(8743) },
-            { '|', Char.ConvertFromUtf32(8744) }
+            { '|', Char.ConvertFromUtf32(8744) },
+            { '%', Char.ConvertFromUtf32(8892) }
         };
         public string infix_formula = "";
         public bool right_node = false;
@@ -34,11 +35,9 @@ namespace ALE1_Katerina
         public List<Operator> operators = new List<Operator>();
         public List<Operant> operants = new List<Operant>();
 
-        // For simplification
+        // For Simplification
         public List<string> truth_rows = new List<string>();
         Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
-
-
         List<string> nr_of_zeros = new List<string>();
         List<string> simplified_rows = new List<string>();
 
@@ -47,11 +46,6 @@ namespace ALE1_Katerina
         public Form1()
         {
             InitializeComponent();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void btn_submit_Click(object sender, EventArgs e)
@@ -86,17 +80,15 @@ namespace ALE1_Katerina
 
             AddNode(this.formula);              // recursive method initializes all nodes with their children/parent
             ConvertAsciiToInfix();
-            Draw_Truth_Table(this.operants);    // creates and draws truth table values
+            DrawTruthTable(this.operants);      // creates and draws truth table values
             Simplify();                         // simplifies truth tables
             DrawSimpleTable();                  // draws table for simplified values
             Normalize();                        // normalizes the truth table and its simplified form
+            Nandify();                          // nandifies nodes
 
             lbl_binary.Text = " ";
             lbl_binary.Text = this.formula_binary;
             Convert2Hex(this.formula_binary);       // shows the hexadecimal form of the formula
-
-            // DEBUG
-            _nodesDebug(false, true, false); // nodes | tree | simplification
 
             // Connect paint event to UI
             panel_tree.Paint += new PaintEventHandler(Draw_Tree);
@@ -104,11 +96,13 @@ namespace ALE1_Katerina
 
             // Display variables
             ShowVariables(this.operants);
+
+            // DEBUG
+            _nodesDebug(false, false, false); // nodes | tree | simplification
         }
 
         private void AddNode(string formula)
         {
-
             INode n;
             int id_index = this.formula_nodes.Count + 1;
 
@@ -116,7 +110,6 @@ namespace ALE1_Katerina
             {
                 id_index = this.formula_nodes.Count + 1;
                 char c = formula[i];
-                //Console.WriteLine(c + " : " + formula_index + " : " + i);
 
                 switch (c)
                 {
@@ -135,7 +128,7 @@ namespace ALE1_Katerina
                     default: // Operants/Operators
 
                         // Add the nodes to their respective list
-                        if (this.logic_notations.Keys.Contains(c)) { // ascii_operators.Contains(c)
+                        if (this.infix_notations.Keys.Contains(c)) {
                             n = new Operator(id_index, c, this, null, null,
                                 this.parent_stack.Count > 0 ? this.parent_stack.Peek().ID : -1);
                             this.operators.Add((Operator)n);
@@ -178,6 +171,10 @@ namespace ALE1_Katerina
 
         public void Draw_Tree(object sender, PaintEventArgs e)
         {
+            // Don't draw nandified formula (overflow)
+            if (formula_nodes[0].Value == '%')
+                return;
+
             var g = e.Graphics;
             System.Drawing.Color color = System.Drawing.Color.Black;
 
@@ -257,11 +254,11 @@ namespace ALE1_Katerina
             if (parent.ID != operators[0].ID && parent.Value != '~')
             {
                 this.infix_formula = this.infix_formula.Insert(parent_pos, ")");
-                this.infix_formula = this.infix_formula.Insert(parent_pos, this.logic_notations[parent.Value]);
+                this.infix_formula = this.infix_formula.Insert(parent_pos, this.infix_notations[parent.Value]);
                 this.infix_formula = this.infix_formula.Insert(parent_pos, "(");
                 parent_pos++;
             } else
-                this.infix_formula = this.infix_formula.Insert(parent_pos, this.logic_notations[parent.Value]);
+                this.infix_formula = this.infix_formula.Insert(parent_pos, this.infix_notations[parent.Value]);
 
             // LEFT CHILD
             if (parent.Left_child != null) {
@@ -306,7 +303,7 @@ namespace ALE1_Katerina
             }
         }
 
-        private void Draw_Truth_Table(List<Operant> variables)
+        private void DrawTruthTable(List<Operant> variables)
         {
             int numOfVariables = variables.Count();
             int numOfColumns = numOfVariables + 1;
@@ -341,12 +338,10 @@ namespace ALE1_Katerina
                             // Add to dictionary that references whether this variable or not needs to switch zeroes/ones
                             changeTruthValue.Add(variables[col].Value, false);
 
-                            //variables[col].Truth_value = false; // DEFAULT
                             // Find all nodes with the same operant and set their truth value
                             IEnumerable<INode> ns = formula_nodes.Where(n => n.Value == variables[col].Value);
                             foreach (INode n in ns)
                                 n.Truth_value = false;
-                                //Console.WriteLine($"{n.Value}'s truth: {n.Truth_value}");
 
                             temp_table_value.Text = variables[col].Value.ToString();
                             temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
@@ -386,6 +381,7 @@ namespace ALE1_Katerina
                         {
                             temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
                             temp_table_value.Text = this.formula;
+                            temp_table_value.AutoSize = true;
                             table_truth.Controls.Add(temp_table_value, col, row);
                         }
                         else { // Calculate and Draw truth value
@@ -415,14 +411,13 @@ namespace ALE1_Katerina
                     }
 
                     // End of Column
-                    
                     if (temp_row.Length == numOfColumns)
                         this.truth_rows.Add(temp_row);
                 }
                 // End of Row
             }
 
-            //Remove the spaces from the string
+            //Remove the spaces from the binary string
             this.formula_binary = this.formula_binary.Replace(" ", "");
         }
 
@@ -487,12 +482,17 @@ namespace ALE1_Katerina
                         else
                             result = 0;
                         break;
+                    case '%':
+                        if (!(result_left == 1 && result_right == 1))
+                            result = 1;
+                        else
+                            result = 0;
+                        break;
                     default:
                         break;
                 }
             }
 
-            //Console.WriteLine($"final result: {result}");
             return result;
         }
 
@@ -682,8 +682,10 @@ namespace ALE1_Katerina
                         if (row == 0)
                         {
                             temp_table_value.Font = new Font(Label.DefaultFont, FontStyle.Bold);
-                            if (col == this.operants.Count()) // last column: show formula
+                            if (col == this.operants.Count()) {// last column: show formula
+                                temp_table_value.AutoSize = true;
                                 temp_table_value.Text = this.formula;
+                            }
                             else // Show variable
                                 temp_table_value.Text = this.operants[col].Value.ToString();
                         }
@@ -706,7 +708,7 @@ namespace ALE1_Katerina
                 }
             }
             else
-                lbl_norm_simp.Text = "Nothing to simplify...";
+                lbl_norm_simp.Text = "Doesn't Simplify";
         }
 
         private void Normalize()
@@ -721,18 +723,17 @@ namespace ALE1_Katerina
                 for (int i = 0; i < this.operants.Count(); i++) // value for each variable (don't include result)
                 {
                     if (t_row[i] == '0')
-                        result += this.logic_notations['~'];
+                        result += this.infix_notations['~'];
 
                     result += this.operants[i].Value;
 
                     // if its not the last variable, add an AND char at the end
                     if (i + 1 < this.operants.Count())
-                        result += this.logic_notations['&'];
+                        result += this.infix_notations['&'];
                 }
 
-                result += ")" + this.logic_notations['|'];
+                result += ")" + this.infix_notations['|'];
             }
-            lbl_norm.Font = new Font(Label.DefaultFont, FontStyle.Bold);
             lbl_norm.Text = result.Substring(0, result.Length - 1); // remove last character that is the extra '|'
 
 
@@ -744,22 +745,21 @@ namespace ALE1_Katerina
                 for (int i = 0; i < s_row.Length; i++)
                 {
                     if (s_row[i] == '0')
-                        result += this.logic_notations['~'];
+                        result += this.infix_notations['~'];
                     else if (s_row[i] == '*')
-                        break;
-
+                        continue;
+                    
                     result += this.operants[i].Value;
 
                     if (i + 1 < s_row.Length)
-                        result += this.logic_notations['&'];
+                        result += this.infix_notations['&'];
                 }
 
-                if (result.Last() == Convert.ToChar(this.logic_notations['&']))
+                if (result.Last() == Convert.ToChar(this.infix_notations['&']))
                     result = result.Substring(0, result.Length - 1);
 
-                result += ")" + this.logic_notations['|'];
+                result += ")" + this.infix_notations['|'];
             }
-            lbl_norm_simp.Font = new Font(Label.DefaultFont, FontStyle.Bold);
             if (result.Length > 0)
                 lbl_norm_simp.Text = result.Substring(0, result.Length - 1); // remove last character that is the extra '|'
 
@@ -775,6 +775,49 @@ namespace ALE1_Katerina
 
             // cut the last 2 chars (", ") from string
             lbl_vars.Text = var_string.Substring(0, var_string.Length - 2);
+        }
+
+        public void Nandify()
+        {
+            string nand_formula = NandifyNode((Operator) this.formula_nodes[0]);
+            if (nand_formula != null)
+                lbl_nand.Text = nand_formula;
+        }
+
+        private string NandifyNode(Operator node)
+        {
+            string l_value = "";
+            string r_value = "";
+
+            // Recurse children if they are operators to nandify their children
+            switch (node.Value)
+            {
+                case '~':
+                    if (node.Left_child is Operant)
+                        return $"%({node.Left_child.Value},{node.Left_child.Value})";
+                    else // is Operator
+                        return $"%({NandifyNode((Operator) node.Left_child)},{NandifyNode((Operator) node.Left_child)})";
+                case '|':
+                    l_value = node.Left_child is Operant ? node.Left_child.Value.ToString() : NandifyNode((Operator)node.Left_child);
+                    r_value = node.Right_child is Operant ? node.Right_child.Value.ToString() : NandifyNode((Operator)node.Right_child);
+                    return $"%(%({l_value},{l_value}),%({r_value},{r_value}))";
+                case '&':
+                    l_value = node.Left_child is Operant ? node.Left_child.Value.ToString() : NandifyNode((Operator)node.Left_child);
+                    r_value = node.Right_child is Operant ? node.Right_child.Value.ToString() : NandifyNode((Operator)node.Right_child);
+                    return $"%(%({l_value},{r_value}),%({l_value},{r_value}))";
+                case '>':
+                    l_value = node.Left_child is Operant ? node.Left_child.Value.ToString() : NandifyNode((Operator)node.Left_child);
+                    r_value = node.Right_child is Operant ? node.Right_child.Value.ToString() : NandifyNode((Operator)node.Right_child);
+                    return $"%({l_value},%({r_value},{r_value}))";
+                case '=':
+                    l_value = node.Left_child is Operant ? node.Left_child.Value.ToString() : NandifyNode((Operator)node.Left_child);
+                    r_value = node.Right_child is Operant ? node.Right_child.Value.ToString() : NandifyNode((Operator)node.Right_child);
+                    return $"%(%(%({l_value},{l_value}),%({r_value},{r_value})),%({l_value},{r_value}))";
+                default:
+                    break;
+            }
+
+            return null;
         }
 
         // DEBUG
@@ -821,6 +864,12 @@ namespace ALE1_Katerina
                 foreach (string simplified_row in this.simplified_rows)
                     Console.WriteLine(simplified_row);
             }
+        }
+
+        private void tb_formula_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Enter)
+                btn_submit.PerformClick();
         }
     }
 }
