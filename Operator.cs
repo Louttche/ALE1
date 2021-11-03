@@ -44,14 +44,9 @@ namespace ALE1_Katerina
             }
         }
 
-        public void AddParent(int parent_id)
+        public void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g, bool debug = false)
         {
-            this.Parent_ID = parent_id;
-        }
-
-        public void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g)
-        {
-            Console.WriteLine($"Node {this.Value} drawn at: {x},{y}");
+            if (debug) { Console.WriteLine($"Node {this.Value} drawn at: {x},{y}"); }
 
             this.X_coord = x;
             this.Y_coord = y;

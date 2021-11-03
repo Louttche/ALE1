@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.30804.86
+VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ALE1_Katerina", "ALE1_Katerina.csproj", "{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}"
 EndProject
@@ -11,8 +11,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Debug|Any CPU.Build.0 = Release|Any CPU
 		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F3010F9-8AFD-4059-B4A4-ABE0108C03C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
@@ -20,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2FBB172E-B02E-4968-A247-DC6A5AA148E6}
+		SolutionGuid = {1FFA86E5-3B2A-4072-8609-C3542C26DF6E}
 	EndGlobalSection
 EndGlobal

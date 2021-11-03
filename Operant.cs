@@ -29,9 +29,9 @@ namespace ALE1_Katerina
             this.Form = form;
         }
 
-        public void DrawNode(int x, int y, int r, Color c, Graphics g)
+        public void DrawNode(int x, int y, int r, Color c, Graphics g, bool debug = false)
         {
-            Console.WriteLine($"Node {this.Value} drawn at: {x},{y}");
+            if (debug) { Console.WriteLine($"Node {this.Value} drawn at: {x},{y}"); }
 
             this.X_coord = x;
             this.Y_coord = y;
@@ -50,11 +50,6 @@ namespace ALE1_Katerina
 
             // mark as drawn
             this.Drawn = true;
-        }
-
-        public void AddParent(int parent_id)
-        {
-            this.Parent_ID = parent_id;
         }
     }
 }

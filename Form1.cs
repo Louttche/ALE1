@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+//using More.Windows.Forms;
+
 namespace ALE1_Katerina
 {
     public partial class Form1 : Form
@@ -20,7 +22,15 @@ namespace ALE1_Katerina
         //public List<TreeNode> tree_nodes = new List<TreeNode>();
         public List<INode> formula_nodes = new List<INode>();
 
-        //public List<char> ascii_operators = new List<char>() { '~', '>', '=', '&', '|' };
+        private int levels;
+        private int max_level;
+
+        // tree
+        private Graphics g;
+        private float zoom = 1f;
+        private int initialPanelWidth;
+        private Point initialPanelLocation;
+
         public Dictionary<char, string> infix_notations = new Dictionary<char, string> { // ascii : notation
             { '~', Char.ConvertFromUtf32(172) },
             { '>', Char.ConvertFromUtf32(8658) },
@@ -44,6 +54,9 @@ namespace ALE1_Katerina
         public Form1()
         {
             InitializeComponent();
+
+            initialPanelWidth = panel_tree.Width;
+            initialPanelLocation = panel_tree.Location;
         }
 
         private void btn_submit_Click(object sender, EventArgs e)
@@ -53,6 +66,10 @@ namespace ALE1_Katerina
             this.operators.Clear();
             this.formula_nodes.Clear();
             this.parent_stack.Clear();
+
+            panel_tree.Controls.Clear();
+            panel_tree.Location = initialPanelLocation;
+            panel_tree.Width = initialPanelWidth;
 
             table_truth.RowStyles.Clear();
             table_truth.ColumnStyles.Clear();
@@ -68,9 +85,9 @@ namespace ALE1_Katerina
 
             this.formula_binary = " ";
             this.infix_formula = "";
-
+            
             // Get formula from text box //
-            this.formula = tb_formula.Text.Replace(" ", ""); // --> remove spaces
+            this.formula = cb_input.Text.Replace(" ", ""); //tb_formula.Text.Replace(" ", ""); // --> remove spaces
             formula_index = 0;
 
             AddNode(this.formula);              // recursive method initializes all nodes with their children/parent
@@ -118,7 +135,6 @@ namespace ALE1_Katerina
                             this.parent_stack.Pop();
                         return; // to exit from child method (of recursion)
                     case ',':
-                        // TODO: Indicates that next char is next child (for now pass works)
                         break;
                     default: // Operants/Operators
 
@@ -144,8 +160,6 @@ namespace ALE1_Katerina
                             {
                                 if (o.ID == this.parent_stack.Peek().ID)
                                     o.AddChild(n);
-
-                                // TODO: Also update the operator in the operators list
                             }
                         }
 
@@ -170,37 +184,43 @@ namespace ALE1_Katerina
             if (formula_nodes[0].Value == '%')
                 return;
 
-            var g = e.Graphics;
+            g = e.Graphics;
+            g.Clear(Color.White);
+            g.ScaleTransform(this.zoom, this.zoom);
             System.Drawing.Color color = System.Drawing.Color.Black;
 
-            // TODO: Find a way to resize if tree goes out of bounds
-            //panel_tree.Width = 350;
-
             // Set top center values
-            int x_coord_init = (panel_tree.Width / 2) - 30;
-            int y_coord_init = 20;
             int radius = 40;
+            int x_coord_init = (panel_tree.Width / 2) - radius; // -radius because the point is at top left
+            int y_coord_init = 20;
 
             DrawTreeChild((Operator) this.formula_nodes[0], x_coord_init, y_coord_init, radius, g);
         }
 
         private void DrawTreeChild(Operator o, int x, int y, int radius, Graphics g, double x_offset = 0, bool debug = false)
         {
-            System.Drawing.Color color = System.Drawing.Color.Black;
+            Color color = Color.Black;
+            Pen linePen = new Pen(Color.Black, 3);
 
             if (debug == true) { Console.WriteLine("Drawing " + o.Value + "\tat: (" + x + "," + y + ")"); }
-            // TODO: Set radius according to node char (in the DrawNode method)
             // Draw operator
             o.DrawNode(x, y, radius, color, g);
 
             // Set up offsets for this node
             if (x_offset == 0)
-                x_offset = Math.Pow(2, operators.Count() - 1); // Correlates to the number of levels the tree will have
+            {
+                // TODO: Get nr of levels properly
+                double nr_of_levels_1_child_case = Math.Pow(2, operators.Count() - 1);
+                //double nr_of_levels = Math.Log(this.operators.Count(), 2);
+                //x_offset = nr_of_levels * (nr_of_levels / 10);
+                x_offset = nr_of_levels_1_child_case;
+            }
             else
                 x_offset = x_offset - (x_offset / 2);
 
             double y_offset = radius * 2;
-            //double line_length = Math.Sqrt(Math.Pow(line_x - radius, 2) + Math.Pow(line_y - radius, 2)); // Pythagoras
+
+            panel_tree.Width += Convert.ToInt32(x_offset);
 
             // Draw children
             if (o.Left_child != null)
@@ -208,13 +228,16 @@ namespace ALE1_Katerina
                 int x_child = (int)(x - x_offset * radius);
                 int y_child = (int)(y + y_offset);
 
+                // Draw line for left child
+                g.DrawLine(linePen, x + (radius / 2), y + radius, x_child + (radius / 2), y_child);
+
                 if (o.Left_child is Operator)
                     // If child is operator, call this method again
                     DrawTreeChild((Operator)o.Left_child, x_child, y_child, radius, g, x_offset);
                 else
                 {
                     // Draw left operant child
-                    o.Left_child.DrawNode(x_child, y_child, radius, color, g);
+                    o.Left_child.DrawNode(x_child, y_child, radius, color, g, false);
                     if (debug == true) { Console.WriteLine("Drawing " + o.Left_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
@@ -224,13 +247,16 @@ namespace ALE1_Katerina
                 int x_child = (int)(x + x_offset * radius);
                 int y_child = (int)(y + y_offset);
 
+                // Draw line for right child
+                g.DrawLine(linePen, x + (radius / 2), y + radius, x_child + (radius / 2), y_child);
+
                 if (o.Right_child is Operator)
                     // If child is operator, call this method again
                     DrawTreeChild((Operator)o.Right_child, x_child, y_child, radius, g, x_offset);
                 else
                 {
                     // Draw right operant child
-                    o.Right_child.DrawNode(x_child, y_child, radius, color, g);
+                    o.Right_child.DrawNode(x_child, y_child, radius, color, g, false);
                     if (debug == true) { Console.WriteLine("Drawing " + o.Right_child.Value + "\tat: (" + x_child + "," + y_child + ")"); }
                 }
             }
@@ -864,6 +890,12 @@ namespace ALE1_Katerina
         {
             if (e.KeyChar == (char)Keys.Enter)
                 btn_submit.PerformClick();
+        }
+
+        private void tb_tree_zoom_Scroll(object sender, EventArgs e)
+        {
+            zoom = tb_tree_zoom.Value / 10f;
+            panel_tree.Invalidate();
         }
     }
 }

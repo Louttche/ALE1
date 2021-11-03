@@ -31,7 +31,6 @@ namespace ALE1_Katerina
         {
             this.components = new System.ComponentModel.Container();
             this.btn_submit = new System.Windows.Forms.Button();
-            this.tb_formula = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.lbl_vars = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -49,6 +48,7 @@ namespace ALE1_Katerina
             this.lbl_notation = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.tp_tree = new System.Windows.Forms.TabPage();
+            this.tb_tree_zoom = new System.Windows.Forms.TrackBar();
             this.panel_tree = new System.Windows.Forms.Panel();
             this.tp_truth = new System.Windows.Forms.TabPage();
             this.table_truth = new System.Windows.Forms.TableLayoutPanel();
@@ -56,16 +56,18 @@ namespace ALE1_Katerina
             this.table_simple = new System.Windows.Forms.TableLayoutPanel();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.cb_input = new System.Windows.Forms.ComboBox();
             this.tc_main.SuspendLayout();
             this.tp_general.SuspendLayout();
             this.tp_tree.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tb_tree_zoom)).BeginInit();
             this.tp_truth.SuspendLayout();
             this.t_simple.SuspendLayout();
             this.SuspendLayout();
             // 
             // btn_submit
             // 
-            this.btn_submit.Location = new System.Drawing.Point(436, 16);
+            this.btn_submit.Location = new System.Drawing.Point(437, 19);
             this.btn_submit.Margin = new System.Windows.Forms.Padding(2);
             this.btn_submit.Name = "btn_submit";
             this.btn_submit.Size = new System.Drawing.Size(58, 30);
@@ -73,15 +75,6 @@ namespace ALE1_Katerina
             this.btn_submit.Text = "Submit";
             this.btn_submit.UseVisualStyleBackColor = true;
             this.btn_submit.Click += new System.EventHandler(this.btn_submit_Click);
-            // 
-            // tb_formula
-            // 
-            this.tb_formula.Location = new System.Drawing.Point(27, 22);
-            this.tb_formula.Margin = new System.Windows.Forms.Padding(2);
-            this.tb_formula.Name = "tb_formula";
-            this.tb_formula.Size = new System.Drawing.Size(405, 20);
-            this.tb_formula.TabIndex = 1;
-            this.tb_formula.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tb_formula_KeyPress);
             // 
             // label1
             // 
@@ -266,6 +259,7 @@ namespace ALE1_Katerina
             // tp_tree
             // 
             this.tp_tree.AutoScroll = true;
+            this.tp_tree.Controls.Add(this.tb_tree_zoom);
             this.tp_tree.Controls.Add(this.panel_tree);
             this.tp_tree.Location = new System.Drawing.Point(4, 22);
             this.tp_tree.Margin = new System.Windows.Forms.Padding(2);
@@ -276,17 +270,30 @@ namespace ALE1_Katerina
             this.tp_tree.Text = "Tree";
             this.tp_tree.UseVisualStyleBackColor = true;
             // 
+            // tb_tree_zoom
+            // 
+            this.tb_tree_zoom.Location = new System.Drawing.Point(5, 5);
+            this.tb_tree_zoom.Minimum = 1;
+            this.tb_tree_zoom.Name = "tb_tree_zoom";
+            this.tb_tree_zoom.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.tb_tree_zoom.Size = new System.Drawing.Size(519, 45);
+            this.tb_tree_zoom.TabIndex = 0;
+            this.tb_tree_zoom.Value = 10;
+            this.tb_tree_zoom.Scroll += new System.EventHandler(this.tb_tree_zoom_Scroll);
+            // 
             // panel_tree
             // 
             this.panel_tree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel_tree.AutoScroll = true;
+            this.panel_tree.AutoScrollMargin = new System.Drawing.Size(1, 1);
             this.panel_tree.AutoSize = true;
-            this.panel_tree.Location = new System.Drawing.Point(6, 4);
+            this.panel_tree.Location = new System.Drawing.Point(5, 56);
             this.panel_tree.Name = "panel_tree";
             this.panel_tree.Padding = new System.Windows.Forms.Padding(2);
-            this.panel_tree.Size = new System.Drawing.Size(518, 322);
+            this.panel_tree.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.panel_tree.Size = new System.Drawing.Size(519, 270);
             this.panel_tree.TabIndex = 0;
             // 
             // tp_truth
@@ -768,14 +775,28 @@ namespace ALE1_Katerina
             this.notifyIcon1.Text = "notifyIcon1";
             this.notifyIcon1.Visible = true;
             // 
+            // cb_input
+            // 
+            this.cb_input.FormattingEnabled = true;
+            this.cb_input.Items.AddRange(new object[] {
+            "~(A)",
+            "=(A,B)",
+            "|(~(A),B)",
+            "=(>(A,B), C)",
+            "|(~(>(A,B)), &(A, >(C,B)))"});
+            this.cb_input.Location = new System.Drawing.Point(27, 25);
+            this.cb_input.Name = "cb_input";
+            this.cb_input.Size = new System.Drawing.Size(405, 21);
+            this.cb_input.TabIndex = 14;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(575, 424);
+            this.Controls.Add(this.cb_input);
             this.Controls.Add(this.tc_main);
-            this.Controls.Add(this.tb_formula);
             this.Controls.Add(this.btn_submit);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
@@ -785,19 +806,18 @@ namespace ALE1_Katerina
             this.tp_general.PerformLayout();
             this.tp_tree.ResumeLayout(false);
             this.tp_tree.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tb_tree_zoom)).EndInit();
             this.tp_truth.ResumeLayout(false);
             this.tp_truth.PerformLayout();
             this.t_simple.ResumeLayout(false);
             this.t_simple.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.Button btn_submit;
-        private System.Windows.Forms.TextBox tb_formula;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lbl_vars;
         private System.Windows.Forms.Label label3;
@@ -822,6 +842,8 @@ namespace ALE1_Katerina
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label lbl_nand;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.TrackBar tb_tree_zoom;
+        private System.Windows.Forms.ComboBox cb_input;
     }
 }
 

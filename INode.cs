@@ -19,7 +19,6 @@ namespace ALE1_Katerina
 
         string ToString(); // return it as infix notation
 
-        void AddParent(int parent_id);
-        void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g); // sets x, y and r properties
+        void DrawNode(int x, int y, int r, System.Drawing.Color c, System.Drawing.Graphics g, bool debug); // sets x, y and r properties
     }
 }
