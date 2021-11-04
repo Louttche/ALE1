@@ -20,13 +20,12 @@ namespace ALE1_Katerina
 
         public Form1 Form;
 
-        public Operant(int id, char value, Form1 form, int parent_id = -1)
+        public Operant(int id, char value, int parent_id = -1)
         {
             this.ID = id;
             this.Value = value;
             this.Parent_ID = parent_id;
             this.Drawn = false;
-            this.Form = form;
         }
 
         public void DrawNode(int x, int y, int r, Color c, Graphics g, bool debug = false)
@@ -46,7 +45,7 @@ namespace ALE1_Katerina
             // Text/Char
             Font myFont = new System.Drawing.Font("Helvetica", 14, FontStyle.Italic);
             Brush myBrush = new SolidBrush(System.Drawing.Color.Red);
-            g.DrawString(this.Value.ToString(), myFont, myBrush, myRectangle.X + 8, myRectangle.Y + 5);
+            g.DrawString(this.Value.ToString(), myFont, myBrush, myRectangle.X + 10, myRectangle.Y + 10);
 
             // mark as drawn
             this.Drawn = true;

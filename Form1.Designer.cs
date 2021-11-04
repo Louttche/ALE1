@@ -48,8 +48,8 @@ namespace ALE1_Katerina
             this.lbl_notation = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.tp_tree = new System.Windows.Forms.TabPage();
+            this.pb_tree = new System.Windows.Forms.PictureBox();
             this.tb_tree_zoom = new System.Windows.Forms.TrackBar();
-            this.panel_tree = new System.Windows.Forms.Panel();
             this.tp_truth = new System.Windows.Forms.TabPage();
             this.table_truth = new System.Windows.Forms.TableLayoutPanel();
             this.t_simple = new System.Windows.Forms.TabPage();
@@ -60,6 +60,7 @@ namespace ALE1_Katerina
             this.tc_main.SuspendLayout();
             this.tp_general.SuspendLayout();
             this.tp_tree.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_tree)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tb_tree_zoom)).BeginInit();
             this.tp_truth.SuspendLayout();
             this.t_simple.SuspendLayout();
@@ -141,7 +142,8 @@ namespace ALE1_Katerina
             // 
             // tc_main
             // 
-            this.tc_main.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.tc_main.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tc_main.Controls.Add(this.tp_general);
             this.tc_main.Controls.Add(this.tp_tree);
@@ -259,8 +261,8 @@ namespace ALE1_Katerina
             // tp_tree
             // 
             this.tp_tree.AutoScroll = true;
+            this.tp_tree.Controls.Add(this.pb_tree);
             this.tp_tree.Controls.Add(this.tb_tree_zoom);
-            this.tp_tree.Controls.Add(this.panel_tree);
             this.tp_tree.Location = new System.Drawing.Point(4, 22);
             this.tp_tree.Margin = new System.Windows.Forms.Padding(2);
             this.tp_tree.Name = "tp_tree";
@@ -269,6 +271,19 @@ namespace ALE1_Katerina
             this.tp_tree.TabIndex = 0;
             this.tp_tree.Text = "Tree";
             this.tp_tree.UseVisualStyleBackColor = true;
+            // 
+            // pb_tree
+            // 
+            this.pb_tree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pb_tree.Location = new System.Drawing.Point(5, 56);
+            this.pb_tree.Margin = new System.Windows.Forms.Padding(0);
+            this.pb_tree.Name = "pb_tree";
+            this.pb_tree.Size = new System.Drawing.Size(519, 265);
+            this.pb_tree.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pb_tree.TabIndex = 0;
+            this.pb_tree.TabStop = false;
             // 
             // tb_tree_zoom
             // 
@@ -280,21 +295,6 @@ namespace ALE1_Katerina
             this.tb_tree_zoom.TabIndex = 0;
             this.tb_tree_zoom.Value = 10;
             this.tb_tree_zoom.Scroll += new System.EventHandler(this.tb_tree_zoom_Scroll);
-            // 
-            // panel_tree
-            // 
-            this.panel_tree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel_tree.AutoScroll = true;
-            this.panel_tree.AutoScrollMargin = new System.Drawing.Size(1, 1);
-            this.panel_tree.AutoSize = true;
-            this.panel_tree.Location = new System.Drawing.Point(5, 56);
-            this.panel_tree.Name = "panel_tree";
-            this.panel_tree.Padding = new System.Windows.Forms.Padding(2);
-            this.panel_tree.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.panel_tree.Size = new System.Drawing.Size(519, 270);
-            this.panel_tree.TabIndex = 0;
             // 
             // tp_truth
             // 
@@ -800,12 +800,13 @@ namespace ALE1_Katerina
             this.Controls.Add(this.btn_submit);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "ALE - Katerina";
             this.tc_main.ResumeLayout(false);
             this.tp_general.ResumeLayout(false);
             this.tp_general.PerformLayout();
             this.tp_tree.ResumeLayout(false);
             this.tp_tree.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pb_tree)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tb_tree_zoom)).EndInit();
             this.tp_truth.ResumeLayout(false);
             this.tp_truth.PerformLayout();
@@ -828,7 +829,6 @@ namespace ALE1_Katerina
         private System.Windows.Forms.TabPage tp_tree;
         private System.Windows.Forms.TabPage tp_truth;
         private System.Windows.Forms.TableLayoutPanel table_truth;
-        private System.Windows.Forms.Panel panel_tree;
         private System.Windows.Forms.TabPage t_simple;
         private System.Windows.Forms.TableLayoutPanel table_simple;
         private System.Windows.Forms.Label lbl_notation;
@@ -844,6 +844,7 @@ namespace ALE1_Katerina
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.TrackBar tb_tree_zoom;
         private System.Windows.Forms.ComboBox cb_input;
+        private System.Windows.Forms.PictureBox pb_tree;
     }
 }
 

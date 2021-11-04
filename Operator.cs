@@ -19,10 +19,8 @@ namespace ALE1_Katerina
         public float Radius { get; set; }
         public bool Truth_value { get; set; }
         public bool Drawn { get; set; }
-        
-        public Form1 Form;
 
-        public Operator(int id, char value, Form1 form, INode left_child = null, INode right_child = null, int parent_id = -1)
+        public Operator(int id, char value, INode left_child = null, INode right_child = null, int parent_id = -1)
         {
             this.ID = id;
             this.Value = value;
@@ -30,7 +28,6 @@ namespace ALE1_Katerina
             this.Right_child = right_child;
             this.Parent_ID = parent_id;
             this.Drawn = false;
-            this.Form = form;
         }
 
         public void AddChild(INode child)
@@ -61,7 +58,7 @@ namespace ALE1_Katerina
             // Text/Char
             Font myFont = new System.Drawing.Font("Helvetica", 14, FontStyle.Italic);
             Brush myBrush = new SolidBrush(System.Drawing.Color.Red);
-            g.DrawString(this.Value.ToString(), myFont, myBrush, myRectangle.X + 8, myRectangle.Y + 5);
+            g.DrawString(this.Value.ToString(), myFont, myBrush, myRectangle.X + 10, myRectangle.Y + 10);
 
             // mark as drawn
             this.Drawn = true;
