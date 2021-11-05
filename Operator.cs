@@ -49,6 +49,8 @@ namespace ALE1_Katerina
             this.Y_coord = y;
             this.Radius = r;
 
+            // Update parent's coords
+
             Pen myPen = new Pen(c, 4);
 
             // Circle

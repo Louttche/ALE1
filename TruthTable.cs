@@ -17,7 +17,7 @@ namespace ALE1_Katerina
 
         public List<string> truth_rows = new List<string>();
         public List<string> simplified_rows = new List<string>();
-        private Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
+        public Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
 
         public TruthTable(Form1 active_form)
         {
