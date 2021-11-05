@@ -18,6 +18,7 @@ namespace ALE1_Katerina
         private Graphics g;
         public float zoom = 1f;
         private bool drawn;
+        private double left_offset;
 
         private Form1 form;
 
@@ -25,6 +26,7 @@ namespace ALE1_Katerina
         {
             this.form = active_form;
             this.drawn = false;
+            this.left_offset = Math.Pow(2, this.form.nodeManager.operators.Count() - 2);
 
             this.size = this.form.ui_pb_tree.Size;
             // Connect paint event to UI
@@ -39,7 +41,6 @@ namespace ALE1_Katerina
                 return;
 
             g = e.Graphics;
-            //g.Clip = new Region(new Rectangle(form.ui_panel_tree.Location, form.ui_panel_tree.Size));
             g.Clear(Color.White);
             g.ScaleTransform(this.zoom, this.zoom);
 
@@ -60,24 +61,26 @@ namespace ALE1_Katerina
                 foreach (INode n in this.form.nodeManager.nodes)
                 {
                     if (n.X_coord < left_most) // left
-                        left_most = n.X_coord - radius;
+                        left_most = n.X_coord;
                     if (n.X_coord > right_most) // right
-                        right_most = n.X_coord + radius;
+                        right_most = n.X_coord;
                     if (n.Y_coord > bottom_most) // bottom
-                        bottom_most = n.Y_coord + (radius*2);
+                        bottom_most = n.Y_coord;
                 }
 
-                this.size = new Size(Math.Abs(Convert.ToInt32(right_most - left_most)), Math.Abs(Convert.ToInt32(bottom_most - y_coord_init)));
+                this.size = new Size(Math.Abs(Convert.ToInt32(right_most - left_most + radius*3)),
+                    Math.Abs(Convert.ToInt32(bottom_most + (radius * 2) - y_coord_init)));
 
-                this.form.ui_panel_tree.SetBounds(
-                    0,
-                    this.form.initialPanelLocation.Y,
-                    this.size.Width,
-                    this.size.Height);
+                //this.form.ui_panel_tree.SetBounds(
+                //    0,
+                //    this.form.initialPanelLocation.Y,
+                //    this.size.Width,
+                //    this.size.Height);
+                //this.form.ui_pb_tree.Top = 0;
 
-                this.form.ui_pb_tree.Bounds = this.form.ui_panel_tree.Bounds;
-                this.form.ui_pb_tree.Top = 0;
-                this.form.ui_pb_tree.Left = 0;
+                // TODO: Update the nodes position to match the final positions on the picture box
+                //this.form.nodeManager.UpdateNodesPosition(0, 0);
+
                 this.drawn = true;
             }
         }
@@ -94,14 +97,10 @@ namespace ALE1_Katerina
 
             // Set up offsets for this node
             if (x_offset == 0)
-            {
-                //double nr_of_levels = Math.Log(this.operators.Count(), 2);
-                //x_offset = nr_of_levels * (nr_of_levels / 10);
-
-                x_offset = Math.Pow(2, this.form.nodeManager.operators.Count() - 2);
-            }
+                x_offset = this.left_offset;
             else
                 x_offset = x_offset - (x_offset / 2);
+
             double y_offset = radius * 2;
 
             // Draw children
@@ -109,6 +108,8 @@ namespace ALE1_Katerina
             {
                 int x_child = (int)(x - x_offset * radius);
                 int y_child = (int)(y + y_offset);
+
+                //this.form.nodeManager.UpdateNodePosition(o.Left_child, x_child, 0);
 
                 // Draw line for left child
                 g.DrawLine(linePen, x + (radius / 2), y + radius, x_child + (radius / 2), y_child);
@@ -128,10 +129,6 @@ namespace ALE1_Katerina
             {
                 int x_child = (int)(x + x_offset * radius);
                 int y_child = (int)(y + y_offset);
-
-                //// Add offset to parent coords (will move up and left) for picturebox
-                //o.X_coord += Convert.ToInt32(x_offset);
-                //o.Y_coord -= Convert.ToInt32(y_offset);
 
                 // Draw line for right child
                 g.DrawLine(linePen, x + (radius / 2), y + radius, x_child + (radius / 2), y_child);

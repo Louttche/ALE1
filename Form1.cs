@@ -120,7 +120,7 @@ namespace ALE1_Katerina
         private void tb_tree_zoom_Scroll(object sender, EventArgs e)
         {
             active_tree.zoom = tb_tree_zoom.Value / 10f;
-            // change bounds according to zoom
+            // TODO: change bounds according to zoom
             pb_tree.Invalidate();
         }
 
@@ -176,7 +176,8 @@ namespace ALE1_Katerina
         // DEBUG
         private void debugAll(bool debugNodes = false, bool debugTree = false, bool debugTable = false, bool debugSimple = false) {
 
-            Console.WriteLine("DEBUG");
+            if (debugNodes || debugTree || debugTable || debugSimple)
+                Console.WriteLine("\nDEBUG\n");
 
             if (debugNodes)
             {

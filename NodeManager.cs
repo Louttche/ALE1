@@ -285,5 +285,13 @@ namespace ALE1_Katerina
 
             return null;
         }
+
+        public void UpdateNodePosition(INode node, int x, int y)
+        {
+            Console.WriteLine($"x offset: {x}\ny offset: {y}");
+            node.X_coord += x;
+            node.Y_coord += y;
+            Console.WriteLine($"Node {node.Value} drawn at ({node.X_coord}, {node.Y_coord})");
+        }
     }
 }

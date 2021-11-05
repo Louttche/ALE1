@@ -298,7 +298,7 @@ namespace ALE1_Katerina
             this.pb_tree.Location = new System.Drawing.Point(-2, -3);
             this.pb_tree.Margin = new System.Windows.Forms.Padding(0);
             this.pb_tree.Name = "pb_tree";
-            this.pb_tree.Size = new System.Drawing.Size(538, 271);
+            this.pb_tree.Size = new System.Drawing.Size(537, 268);
             this.pb_tree.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pb_tree.TabIndex = 21;
             this.pb_tree.TabStop = false;
@@ -825,7 +825,8 @@ namespace ALE1_Katerina
             "=(A,B)",
             "|(~(A),B)",
             "=(>(A,B), C)",
-            "|(~(>(A,B)), &(A, >(C,B)))"});
+            "|(~(>(A,B)), &(A, >(C,B)))",
+            "%(%(%(A,A),%(B,B)),%(A,B))"});
             this.cb_input.Location = new System.Drawing.Point(27, 25);
             this.cb_input.Name = "cb_input";
             this.cb_input.Size = new System.Drawing.Size(405, 21);
