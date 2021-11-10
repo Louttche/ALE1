@@ -12,6 +12,7 @@ namespace ALE1_Katerina
         public string formula = "";
         public string formula_infix = "";
         public string formula_binary = "";
+        public string formula_hex = "";
         public List<INode> nodes = new List<INode>();
         public List<Operator> operators = new List<Operator>();
         public List<Operant> operants = new List<Operant>();
@@ -39,6 +40,7 @@ namespace ALE1_Katerina
             this.parent_stack.Clear();
             this.formula_binary = " ";
             this.formula_infix = "";
+            this.formula_hex = "";
             formula_index = 0;
         }
 
@@ -110,6 +112,9 @@ namespace ALE1_Katerina
 
         public void ConvertAsciiToInfix()
         {
+            if (this.nodes[0] is Operant)
+                return;
+
             Get_Notation((Operator)this.nodes[0]); // First node in formula list is always the head parent
             this.form.ui_lbl_notation.Text = formula_infix;
         }
@@ -201,6 +206,8 @@ namespace ALE1_Katerina
                 else
                     pos_value = pos_value / 2;
             }
+
+            this.formula_hex = this.form.ui_lbl_hex.Text;
         }
 
         private string FillInZeroes(string binary_s)

@@ -71,12 +71,12 @@ namespace ALE1_Katerina
                 this.size = new Size(Math.Abs(Convert.ToInt32(right_most - left_most + radius*3)),
                     Math.Abs(Convert.ToInt32(bottom_most + (radius * 2) - y_coord_init)));
 
-                //this.form.ui_panel_tree.SetBounds(
-                //    0,
-                //    this.form.initialPanelLocation.Y,
-                //    this.size.Width,
-                //    this.size.Height);
-                //this.form.ui_pb_tree.Top = 0;
+                this.form.ui_panel_tree.SetBounds(
+                    0,
+                    this.form.initialPanelLocation.Y,
+                    this.size.Width,
+                    this.size.Height);
+                this.form.ui_pb_tree.Top = 0;
 
                 // TODO: Update the nodes position to match the final positions on the picture box
                 //this.form.nodeManager.UpdateNodesPosition(0, 0);

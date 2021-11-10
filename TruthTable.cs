@@ -19,6 +19,8 @@ namespace ALE1_Katerina
         public List<string> simplified_rows = new List<string>();
         public Dictionary<int, List<string>> nr_of_ones_groups = new Dictionary<int, List<string>>();
 
+        public bool can_simplify = false;
+
         public TruthTable(Form1 active_form)
         {
             this.form = active_form;
@@ -381,9 +383,13 @@ namespace ALE1_Katerina
                         this.form.ui_table_simple.Controls.Add(temp_table_value, col, row);
                     }
                 }
+
+                can_simplify = true;
             }
-            else
+            else {
+                can_simplify = false;
                 this.form.ui_lbl_norm_simp.Text = "Doesn't Simplify";
+            }
         }
 
         public void Normalize()
